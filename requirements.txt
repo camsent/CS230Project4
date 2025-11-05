@@ -5,3 +5,7 @@ pydantic
 python-dotenv
 argon2-cffi
 
+Frontend
+- nodejs
+- vite
+- react-icons
