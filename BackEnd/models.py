@@ -58,3 +58,14 @@ class Flashcard(Base):
     @staticmethod
     def to_string(front, back):
         return f"FRONT: {front}\nBACK: {back}"
+    
+    
+class Active_Session(Base): 
+    __tablename__ = "sessions"
+    id: Mapped[str] = mapped_column(primary_key=True)
+    user_id: Mapped[str] = mapped_column(primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    
+    @staticmethod
+    def to_string(id, user_id): 
+        return f"ID: {id}, USER_ID: {user_id}"
