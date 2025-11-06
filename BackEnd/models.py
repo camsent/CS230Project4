@@ -29,7 +29,6 @@ class FlashcardSet(Base):
     id: Mapped[str] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(unique=True, nullable=False)
 
-    # Foreign key to User
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
     user: Mapped["User"] = relationship(back_populates="flashcard_sets")
 
@@ -50,7 +49,6 @@ class Flashcard(Base):
     front: Mapped[str] = mapped_column(nullable=False)
     back: Mapped[str] = mapped_column(nullable=False)
 
-    # Foreign key to FlashcardSet
     flashcard_set_id: Mapped[str] = mapped_column(
         ForeignKey("flashcard_sets.id"),
         nullable=False
