@@ -1,0 +1,10 @@
+fastapi[standard]
+uvicorn
+sqlalchemy
+pydantic
+python-dotenv
+argon2-cffi
+python-multipart
+
+
+
