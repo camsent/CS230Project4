@@ -13,3 +13,15 @@ class UserCreate(UserBase):
 
 class UserOutBase(UserBase):
     id: UUID
+    
+    
+    
+class FlashcardSetUpdate(BaseModel): 
+    title: str | None
+    
+    
+class FlashcardUpdate(BaseModel):
+    front: str | None
+    back: str | None
+    
+    
