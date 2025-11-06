@@ -16,8 +16,9 @@ const LoginPage = () => {
                     <input type="password" placeholder="Password" required />
                     <FaLock className='icon' />
                 </div>
-                <button type="submit">Login</button>
-                    
+                <Link to="/home">
+                    <button type="submit">Login</button>
+                </Link>   
                 <div className="register-link">
                     <p>Don't have an account? <Link to="/register">Register</Link></p>
                 </div>
