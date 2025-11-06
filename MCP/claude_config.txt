@@ -1,10 +1,10 @@
 "This is what should go into claude_desktop_config.json"
 { "mcpServers": 
- {
-    "My Tasks": {
+  {
+    "Flashcard_app": {
       "command": "uv",
       "args": [
-        "run", "C:\\PATH_TO_PROJECT_FOLDER\\CS230Project4\\MCP\\mcp_server.py"
+        "run", "C:\Users\Maxwe\Web Dev Code (No OneDrive)\Project 4 Engineering\CS230Project4\MCP\mcp_server.py"
       ]
     }
   }
