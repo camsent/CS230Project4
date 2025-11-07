@@ -17,7 +17,7 @@ class UserOutBase(UserBase):
     
     
 class FlashcardSetUpdate(BaseModel): 
-    title: str | None
+    title: str
     
     
 class FlashcardUpdate(BaseModel):
