@@ -16,7 +16,6 @@ def check_password(pw: str, hashed_pw: str):
 
 
 def check_user_id(username):
-    
     with Session() as session:
         user = session.scalars(select(User).where(User.username == username)).first()
         if user:
@@ -24,7 +23,7 @@ def check_user_id(username):
         return False
     
 
-def get_user_data_at_login(username):
+def get_user_data_login(username):
     with Session() as session:
         user = session.scalars(select(User).where(User.username == username)).first()
     return user

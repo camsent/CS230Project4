@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
 from typing import Annotated
 from sqlalchemy import select, update, delete
 from sqlalchemy.exc import IntegrityError
-from BackEnd.models import User, Active_Session
-from BackEnd.schema import UserCreate
+from BackEnd.models import User, Active_Session, FlashcardSet, Flashcard
+from BackEnd.schema import UserCreate, FlashcardUpdate, FlashcardSetUpdate
 from BackEnd.database import Session
 from BackEnd.auth import auth
+from BackEnd.middleware import middleware
 import uuid
 
 router = APIRouter()
@@ -14,7 +15,6 @@ router = APIRouter()
 @router.get("/")
 def root(): 
     return {"Hello": "World"}
-
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register(user_data: UserCreate): 
@@ -50,19 +50,17 @@ def register(user_data: UserCreate):
     return result
 
 @router.post("/login")
-def login(user_data: UserCreate):
+def login(user_data: UserCreate, response: Response):
     data = user_data.model_dump()
     
-    str_password = str(data["password"])
-    user = auth.check_user_id(data["username"])
+    user = auth.get_user_data_login(data["username"])
+    if not user:
+        raise HTTPException(status_code=401, detail="User does not exist")
+
     
-    if not user: 
-        raise HTTPException(401, "User does not exist")
+    check_pw = auth.check_password(data["password"], user.hashed_password)
     
-    user = auth.get_user_data_at_login(data["username"])
-    checked_pw = auth.check_password(str_password, user.hashed_password)
-    
-    if not checked_pw: 
+    if not check_pw: 
        raise HTTPException(status_code=401, detail="User does not exist") 
    
     with Session() as session: 
@@ -73,23 +71,64 @@ def login(user_data: UserCreate):
                 id = sess_id,
                 user_id = user.id
             )
-            #session.execute(stmt)
             session.add(new_session)
             
             session.commit()
+            
+            response.set_cookie(
+                key="session_id",
+                value=sess_id,
+                httponly=True,   
+                samesite="lax",   
+                secure=True
+            ) 
             
        except IntegrityError: 
             session.rollback()
             raise HTTPException(status_code=400, detail="Bad login request")
             
-    return {
-        "session_id": sess_id, 
-        "user_id: ": user.id, 
-        "message": "Login successful" 
-    }   
+    return {"message": "Login successful", "user_id": user.id}
+
             
         
-        
-        
+#add middleware and get user vvv
+@router.patch("/flashcards/set/{set_id}")
+def update_flashcard_setname(set_id: int, set_title: FlashcardSetUpdate, user_id: Annotated[str, Depends(middleware.get_current_user)]):
+    
+    with Session() as session: 
+        try: 
+            stmt = (
+                update(FlashcardSet)
+                .where(FlashcardSet.id == set_id, FlashcardSet.user_id == user_id)
+                .values(**set_title.model_dump(exclude_unset=True))
+            )
+            
+            session.execute(stmt)
+            session.commit()
+            
+        except IntegrityError: 
+            session.rollback()
+            raise HTTPException(status_code=400, detail="Error updating flashcard set title")
+    
+
+#add middleware and get user vvv
+@router.patch("/flashcards/set/{set_id}/flashcard/{flashcard_id}")
+def update_flashcard(set_id: int, flashcard_id: int, flashcard_data: FlashcardUpdate, user_id: Annotated[str, Depends(middleware.get_current_user)]):
+    with Session() as session: 
+        try: 
+            stmt = (
+                update(flashcard_data)
+                .where(Flashcard.set_id == set_id, Flashcard.id == flashcard_id, Flashcard)
+                .values(**flashcard_data.model_dump(exclude_unset=True))
+            )    
+            
+            session.execute(stmt)
+            session.commit()    
+            
+        except IntegrityError: 
+            session.rollback()
+            raise HTTPException(status_code=400, detail="Error updating flashcard data")
+
+                
         
     
