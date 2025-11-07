@@ -1,13 +1,42 @@
-.wrapper {
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 20px;
+    align-items: flex-start;
     background: hsl(124 3.2% 25.1%);
     color: ghostwhite;
-    border-radius: 8px;
+    border-radius: 0;
     padding: 30px 40px;
     box-shadow: 0 0 50px rgba(0, 0, 0, .1);
+    box-sizing: border-box;
+}
+.container div {
+    flex: 0 0 calc(33.333% - 20px);
+    margin-bottom: 20px;
+    border: 1px solid black;
+    border-radius: 8px;
+    padding: 40px;
+    aspect-ratio: 7 / 3;
+    font-size: 30px;
+    text-align: center;
+    transition: box-shadow 0.3s ease-in-out;
 }
 
-.wrapper h1 {
-    font-size: 36px;
+.container div:hover {
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.8); /* Cyan glow on hover */
+}
+
+button {
+    width: 15%;
+    height: 45px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .1); 
+    cursor: pointer;
+    font-size: 16px;
+    color: #333;
+    font-weight: 700;
     text-align: center;
 }
 
@@ -43,55 +72,3 @@
     color: #333;
 }
 
-.wrapper button {
-    width: 50%;
-    height: 45px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, .1); 
-    cursor: pointer;
-    font-size: 16px;
-    color: #333;
-    font-weight: 700;
-    text-align: center;
-}
-
-.wrapper .register-link {
-    font-size: 14.5px;
-    text-align: center;
-    margin: 20px 0 15px;
-}
-
-.register-link p a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.register-link p  a:hover {
-    text-decoration: underline;
-}
-
-.container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    background: hsl(124 3.2% 25.1%);
-    color: ghostwhite;
-    border-radius: 8px;
-    padding: 30px 40px;
-    box-shadow: 0 0 50px rgba(0, 0, 0, .1);
-}
-.container div {
-    flex: 0 0 calc(33.333% - 20px);
-    margin-bottom: 20px;
-    border: 1px solid black;
-    padding: 40px;
-    font-size: 30px;
-    text-align: center;
-    transition: box-shadow 0.3s ease-in-out;
-}
-
-.container div:hover {
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.8); /* Cyan glow on hover */
-}
