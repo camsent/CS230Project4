@@ -129,6 +129,20 @@ def update_flashcard(set_id: int, flashcard_id: int, flashcard_data: FlashcardUp
             session.rollback()
             raise HTTPException(status_code=400, detail="Error updating flashcard data")
 
-                
+@router.delete("/flashcards/set/{set_id}")
+def delete_flashcard_set(set_id: int, user_id: Annotated[str, Depends(middleware.get_current_user)]):
+    with Session() as session: 
+        try: 
+            stmt = (
+                delete(FlashcardSet)
+                .where(FlashcardSet.id == set_id, FlashcardSet.user_id == user_id)
+            )
+            
+            session.execute(stmt)
+            session.commit()
+            
+        except IntegrityError: 
+            session.rollback()
+            raise HTTPException(status_code=400, detail="Error deleting flashcard set")
         
     
