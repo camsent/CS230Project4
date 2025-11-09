@@ -21,24 +21,49 @@ const HomePage = () => {
     navigate(`/study/${id}`); // navigate to another page (dynamic route)
   };
 
+  const handleDelete = (e, item) => {
+    e.stopPropagation();
+    const confirmed = window.confirm(`Are you sure you want to delete "${item.content}"?`);
+    if (confirmed) {
+      console.log(`Deleted item with id: ${item.id}`);
+      // Your delete logic here (e.g., API call or state update)
+    }
+  };
+
   return (
     <div className="container">
-      {myData.map((item) => (
-        <div
-          key={item.id}
-          className="stuff"
-          onClick={() => handleClick(item.id)}
-          style={{ cursor: "pointer" }}
-        >
-          {item.content}
-          <br />
-          <br />
-          <button>Study</button>
-          <button>Edit</button>
-          <button>Delete</button>
-        </div>
-      ))}
+      <h1>Flash Card Sets:</h1>
+      <div id="card_list">
+        {myData.map((item) => (
+          <div
+            key={item.id}
+            className="stuff"
+            onClick={() => handleClick(item.id)}
+            style={{ cursor: "pointer" }}
+          >
+            {item.content}
+            <br />
+            <br />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/edit/${item.id}`);
+              }}
+            >
+              Edit
+            </button>
+            <button
+              onClick={(e) => handleDelete(e, item)}
+              style={{ color: "red" }}
+            >
+              Delete
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
+
+    
   );
 };
 
