@@ -1,6 +1,6 @@
 import React from 'react';
 import './HomePage.css'
-import { FaUser, FaLock } from "react-icons/fa"
+import { FaPen, FaTrash } from "react-icons/fa"
 import { useNavigate } from 'react-router-dom';
 
 
@@ -40,24 +40,27 @@ const HomePage = () => {
             className="stuff"
             onClick={() => handleClick(item.id)}
             style={{ cursor: "pointer" }}
+            id="card"
           >
             {item.content}
             <br />
             <br />
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/edit/${item.id}`);
-              }}
-            >
-              Edit
-            </button>
-            <button
-              onClick={(e) => handleDelete(e, item)}
-              style={{ color: "red" }}
-            >
-              Delete
-            </button>
+            <div id="buttons">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/edit/${item.id}`);
+                }}
+              >
+                <FaPen className='icon' />
+              </button>
+              <button
+                onClick={(e) => handleDelete(e, item)}
+                style={{ color: "red" }}
+              >
+                <FaTrash className='icon' />
+              </button>
+            </div>
           </div>
         ))}
       </div>
