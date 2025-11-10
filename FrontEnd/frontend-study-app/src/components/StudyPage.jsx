@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './StudyPage.css';
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa"
 import { useNavigate } from 'react-router-dom';
+
 
 const myData = [
   { card_num: 1, front: "Item 1", back: "1 Item" },
@@ -36,13 +38,13 @@ const StudyPage = () => {
   return (
     <div className="container">
       <div id="studying">
-        <button onClick={handlePrev}>PREV</button>
-
         <div id="flashcard" onClick={handleFlip}>
           <div>{showFront ? currentCard.front : currentCard.back}</div>
         </div>
-
-        <button onClick={handleNext}>NEXT</button>
+        <div id="buttons">
+        <button onClick={handlePrev}><FaArrowLeft className='icon' /></button>
+        <button onClick={handleNext}><FaArrowRight className='icon' /></button>
+        </div>
       </div>
 
       <div style={{ marginTop: '1rem' }}>
