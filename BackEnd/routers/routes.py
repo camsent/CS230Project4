@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
+from fastapi import APIRouter, Depends, HTTPException, status, Response, File, UploadFile
 from typing import Annotated
 from sqlalchemy import select, update, delete
 from sqlalchemy.exc import IntegrityError
+
+from BackEnd import UPLOAD_DIR
 from BackEnd.models import User, Active_Session, FlashcardSet, Flashcard
 from BackEnd.schema import UserCreate, FlashcardUpdate, FlashcardSetUpdate
 from BackEnd.database import Session
 from BackEnd.auth import auth
 from BackEnd.middleware import middleware
+from BackEnd.internal import utils
+
 import uuid
 
 router = APIRouter()
@@ -89,7 +93,20 @@ def login(user_data: UserCreate, response: Response):
             
     return {"message": "Login successful", "user_id": user.id}
 
-            
+
+@router.post("/upload")
+async def create_upload_file(file: UploadFile):   #create_upload_files(files: list[UploadFile]) -> FOR MULTIPLE FILES IF NEEDED
+    contents = await file.read()
+
+    print("File size in bytes:", len(contents))
+    print("Content type:", file.content_type)
+
+    
+    img_text = utils.extract_image_text(contents)
+    print(img_text)
+    
+    
+    
         
 #add middleware and get user vvv
 @router.patch("/flashcards/set/{set_id}")
