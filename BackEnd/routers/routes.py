@@ -107,6 +107,35 @@ async def create_upload_file(file: UploadFile):   #create_upload_files(files: li
     
     
     
+@router.get("/get/flashcard/set/{set_id}")
+def get_flashcard_set(set_id: int, user_id: Annotated[str, Depends(middleware.get_current_user)]):
+    with Session() as session: 
+        flashcard_set = session.scalars(
+            select(FlashcardSet)
+            .where(FlashcardSet.id == set_id, FlashcardSet.user_id == user_id)
+        ).first()
+        
+        if not flashcard_set: 
+            raise HTTPException(status_code=404, detail="Flashcard set not found")
+        
+        flashcards = session.scalars(
+            select(Flashcard)
+            .where(Flashcard.flashcard_set_id == flashcard_set.id)
+        ).all()
+        
+        result = {
+            "set_id": flashcard_set.id,
+            "title": flashcard_set.title,
+            "flashcards": [
+                {
+                    "id": flashcard.id,
+                    "front": flashcard.front,
+                    "back": flashcard.back
+                } for flashcard in flashcards
+            ]
+        }
+        
+        return result            
         
 #add middleware and get user vvv
 @router.patch("/flashcards/set/{set_id}")
