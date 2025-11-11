@@ -51,6 +51,14 @@ button {
     text-align: center;
 }
 
+button .icon {
+    color: #333;
+}
+
+button .icon2 {
+    color: red;
+}
+
 .wrapper .input-box{
     position: relative;
     width: 100%;

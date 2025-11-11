@@ -58,6 +58,10 @@ button {
     text-align: center;
 }
 
+button .icon {
+    color: #333;
+}
+
 /* Hover effect without glow */
 button:hover {
     background: #e6e6e6;

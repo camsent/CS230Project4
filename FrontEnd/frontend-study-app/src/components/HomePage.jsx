@@ -56,9 +56,8 @@ const HomePage = () => {
               </button>
               <button
                 onClick={(e) => handleDelete(e, item)}
-                style={{ color: "red" }}
               >
-                <FaTrash className='icon' />
+                <FaTrash className='icon2' />
               </button>
             </div>
           </div>
