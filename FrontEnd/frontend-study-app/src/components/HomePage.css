@@ -1,4 +1,9 @@
-.container {
+h1 {
+    color: ghostwhite;
+}
+
+#card_list {
+    width: 100vw;
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
@@ -11,7 +16,7 @@
     box-shadow: 0 0 50px rgba(0, 0, 0, .1);
     box-sizing: border-box;
 }
-.container div {
+#card {
     flex: 0 0 calc(33.333% - 20px);
     margin-bottom: 20px;
     border: 1px solid black;
@@ -23,8 +28,14 @@
     transition: box-shadow 0.3s ease-in-out;
 }
 
-.container div:hover {
+#card:hover {
   box-shadow: 0 0 15px rgba(0, 255, 255, 0.8); /* Cyan glow on hover */
+}
+
+#buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
 }
 
 button {
