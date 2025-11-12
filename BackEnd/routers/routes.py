@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
+from fastapi import APIRouter, Depends, HTTPException, status, Response, File, UploadFile
 from typing import Annotated
 from sqlalchemy import select, update, delete
 from sqlalchemy.exc import IntegrityError
+
+from BackEnd import UPLOAD_DIR
 from BackEnd.models import User, Active_Session, FlashcardSet, Flashcard
 from BackEnd.schema import UserCreate, FlashcardUpdate, FlashcardSetUpdate
 from BackEnd.database import Session
 from BackEnd.auth import auth
 from BackEnd.middleware import middleware
+from BackEnd.internal import utils
+
 import uuid
 
 router = APIRouter()
@@ -89,7 +93,49 @@ def login(user_data: UserCreate, response: Response):
             
     return {"message": "Login successful", "user_id": user.id}
 
-            
+
+@router.post("/upload")
+async def create_upload_file(file: UploadFile):   #create_upload_files(files: list[UploadFile]) -> FOR MULTIPLE FILES IF NEEDED
+    contents = await file.read()
+
+    print("File size in bytes:", len(contents))
+    print("Content type:", file.content_type)
+
+    
+    img_text = utils.extract_image_text(contents)
+    print(img_text)
+    
+    
+    
+@router.get("/get/flashcard/set/{set_id}")
+def get_flashcard_set(set_id: int, user_id: Annotated[str, Depends(middleware.get_current_user)]):
+    with Session() as session: 
+        flashcard_set = session.scalars(
+            select(FlashcardSet)
+            .where(FlashcardSet.id == set_id, FlashcardSet.user_id == user_id)
+        ).first()
+        
+        if not flashcard_set: 
+            raise HTTPException(status_code=404, detail="Flashcard set not found")
+        
+        flashcards = session.scalars(
+            select(Flashcard)
+            .where(Flashcard.flashcard_set_id == flashcard_set.id)
+        ).all()
+        
+        result = {
+            "set_id": flashcard_set.id,
+            "title": flashcard_set.title,
+            "flashcards": [
+                {
+                    "id": flashcard.id,
+                    "front": flashcard.front,
+                    "back": flashcard.back
+                } for flashcard in flashcards
+            ]
+        }
+        
+        return result            
         
 #add middleware and get user vvv
 @router.patch("/flashcards/set/{set_id}")
