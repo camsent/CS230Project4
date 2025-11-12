@@ -11,6 +11,7 @@ huggingface-hub
 transformers
 torch
 requests
+python-dotenv
 
 
 
