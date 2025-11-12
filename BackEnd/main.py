@@ -11,7 +11,7 @@ app.include_router(core_routes.router)
 
 
 origins = [
-    "https://localhost:3000"
+    "http://localhost:5174"
 ]
 
 
