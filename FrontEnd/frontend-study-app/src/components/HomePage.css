@@ -1,3 +1,7 @@
+.container {
+    margin-top: 40px;
+}
+
 h1 {
     color: ghostwhite;
 }
@@ -51,7 +55,7 @@ button {
     text-align: center;
 }
 
-button .icon {
+button .icon1 {
     color: #333;
 }
 
