@@ -5,7 +5,7 @@ import RegisterPage from './components/RegisterPage';
 import HomePage from './components/homePage';
 import Navbar from './components/NavBar';
 import StudyPage from './components/StudyPage'
-
+import EditPage from './components/EditPage';
 
 function App() {
 
@@ -18,6 +18,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/study" element={<StudyPage />} />
+        <Route path="/edit" element={<EditPage />} />
       </Routes>
     </Router>
     </>
