@@ -2,16 +2,11 @@ import cv2
 import pytesseract
 import os
 import numpy as np
+from transformers import pipeline
+import requests
+from huggingface_hub import InferenceClient
 
 
-image_path = "/Users/samsmith/Desktop/COW_Courses/softwareEngineering/project4/IMG_3231.jpeg"
-
-if not os.path.exists(image_path):
-    raise FileNotFoundError(f"Image not found: {image_path}")
-
-img = cv2.imread(image_path)
-if img is None:
-    raise ValueError(f"cv2 could not read the image file: {image_path}")
 
 # get grayscale image
 def get_grayscale(image):
@@ -142,3 +137,69 @@ def extract_image_text(contents):
 
     text = pytesseract.image_to_string(fixed, lang='eng')
     return text 
+<<<<<<< HEAD
+=======
+
+
+
+hf_token = os.getenv("HF_TOKEN")
+API_URL = "https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3.1-8B-Instruct"
+
+headers = {
+    "Authorization": f"Bearer {hf_token}",
+    "Content-Type": "application/json"
+}
+
+#client = InferenceClient()
+def create_flashcards(text: str):
+    prompt = f"""
+        Generate 3 study flashcards from this text. 
+        Format each flashcard as:
+
+        Q: <question text>
+        A: <answer text>
+        Separate flashcards with the symbol |||
+        Text: {text}
+    """ 
+    payload = {
+        "messages": [
+            {
+            "role": "user",
+            "content": prompt
+            }
+        ],
+        "model": "openai/gpt-oss-120b:fastest",  
+        "stream": False
+    }
+
+    response = requests.post(
+        "https://router.huggingface.co/v1/chat/completions",
+        headers=headers,
+        json=payload
+    )
+
+    data = response.json()
+
+    return data["choices"][0]["message"]["content"]
+    
+    
+# TODO: parse response data into a list of flash cards
+
+def to_flashcard_list(flashcards): 
+    
+    prams = {"Q", "A", "|||"}
+    
+    flashcard_generatory = dict()
+    result = []
+    
+    flash_list = flashcards.split()
+    
+    idx = 0 
+    while idx < len(flash_list): 
+        constructor = []
+        if flash_list[idx] == "A" or flash_list[idx] == "Q": 
+            pass
+    
+    
+    print(flash_list) 
+>>>>>>> e6260db8ada0924a339fa6da5cdbda3c64e97dad
