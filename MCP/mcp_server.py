@@ -1,77 +1,58 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import logging
+import sys
+import os
+
+# Dynamically add the project root (CS230Project4) to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from mcp.server.fastmcp import FastMCP
 import mcp_helper
 
-# -------------------------------------------
-# Flask App Setup
-# -------------------------------------------
-app = Flask(__name__)
-CORS(app)
+mcp = FastMCP("Flashcards MCP")
 
-# Logging configuration
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.StreamHandler()]
-)
-logger = logging.getLogger(__name__)
+@mcp.tool()
+async def register_user(username: str, password: str) -> str:
+    """Register a new user."""
+    return mcp_helper.register_user(username, password)
 
-# -------------------------------------------
-# MCP Endpoints
-# -------------------------------------------
+@mcp.tool()
+async def login_user(username: str, password: str) -> str:
+    """Log in a user and create an active session."""
+    return mcp_helper.login_user(username, password)
 
-@app.route("/tools/get_flashcards", methods=["POST"])
-def get_flashcards_tool():
-    """
-    Fetch all flashcards from the backend.
-    This endpoint is called by Claude via MCP.
-    """
-    logger.info("Received request: get_flashcards_tool")
-    try:
-        flashcards = mcp_helper.get_flashcards()
-        logger.info(f"Fetched {len(flashcards)} flashcards from backend.")
-        return jsonify(flashcards), 200
-    except Exception as e:
-        logger.error(f"Error fetching flashcards: {e}")
-        return jsonify({"error": str(e)}), 500
+@mcp.tool()
+async def logout_user() -> str:
+    """Log out the currently logged-in user."""
+    return mcp_helper.logout_user()
 
+@mcp.tool()
+async def list_sets() -> str:
+    """List all flashcard sets for the current user."""
+    return mcp_helper.list_sets()
 
-@app.route("/tools/add_flashcard", methods=["POST"])
-def add_flashcard_tool():
-    """
-    Add a new flashcard to the backend.
-    Expected JSON: { "question": "...", "answer": "...", "topic": "..." }
-    """
-    logger.info("Received request: add_flashcard_tool")
-    try:
-        data = request.get_json()
-        question = data.get("question")
-        answer = data.get("answer")
-        topic = data.get("topic", "")
+@mcp.tool()
+async def list_flashcards(set_id: str) -> str:
+    """List all flashcards in a given set."""
+    return mcp_helper.list_flashcards(set_id)
 
-        if not question or not answer:
-            return jsonify({"error": "Missing 'question' or 'answer'"}), 400
+@mcp.tool()
+async def create_flashcard_set(title: str) -> str:
+    """Create a new flashcard set for the logged-in user."""
+    return mcp_helper.create_flashcard_set(title)
 
-        result = mcp_helper.add_flashcard(question, answer, topic)
-        logger.info(f"Added flashcard: {question}")
-        return jsonify(result), 200
-    except Exception as e:
-        logger.error(f"Error adding flashcard: {e}")
-        return jsonify({"error": str(e)}), 500
+@mcp.tool()
+async def create_flashcard(set_id: str, front: str, back: str) -> str:
+    """Create a new flashcard in a given set."""
+    return mcp_helper.create_flashcard(set_id, front, back)
 
+@mcp.tool()
+async def update_flashcard(set_id: str, flashcard_id: str, front: str = None, back: str = None) -> str:
+    """Update a flashcard's front and/or back."""
+    return mcp_helper.update_flashcard(set_id, flashcard_id, front, back)
 
-# -------------------------------------------
-# Root Health Check
-# -------------------------------------------
-@app.route("/", methods=["GET"])
-def home():
-    return jsonify({"status": "MCP server running", "tools": ["get_flashcards", "add_flashcard"]})
+@mcp.tool()
+async def delete_flashcard(set_id: str, flashcard_id: str) -> str:
+    """Delete a flashcard."""
+    return mcp_helper.delete_flashcard(set_id, flashcard_id)
 
-
-# -------------------------------------------
-# Run Server
-# -------------------------------------------
 if __name__ == "__main__":
-    logger.info("Starting MCP server on http://localhost:4000 ...")
-    app.run(port=4000)
+    mcp.run(transport="stdio")

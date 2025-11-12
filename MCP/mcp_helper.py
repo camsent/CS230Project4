@@ -1,82 +1,151 @@
-import requests
-import logging
-import os
+from BackEnd.database import Session
+from BackEnd.models import User, FlashcardSet, Flashcard, Active_Session
+from BackEnd.auth.auth import auth
+from sqlalchemy import select, update, delete
+from sqlalchemy.exc import IntegrityError
+import uuid
 
-# -------------------------------------------
-# Configuration
-# -------------------------------------------
+# global login state
+current_user_id = None
 
-# You can set this in an environment variable if needed:
-# Example: export BACKEND_URL=http://localhost:5000/api
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:5000/api")
+# ---------- USER AUTH ----------
+def register_user(username: str, password: str) -> str:
+    if not username or not password:
+        return "Invalid username or password."
 
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.StreamHandler()]
-)
-logger = logging.getLogger(__name__)
+    hashed_pw = auth.hash_password(password)
+    user_id = str(uuid.uuid4())
 
-# -------------------------------------------
-# Helper Functions
-# -------------------------------------------
+    with Session() as session:
+        check = session.scalars(select(User).where(User.username == username)).first()
+        if check:
+            return "Username already taken."
 
-def get_flashcards():
-    """
-    Fetch all flashcards from the backend API.
-    Returns:
-        list of flashcards (dict)
-    """
-    try:
-        url = f"{BACKEND_URL}/flashcards"
-        logger.info(f"Requesting flashcards from {url}")
-        response = requests.get(url, timeout=5)
+        try:
+            new_user = User(id=user_id, username=username, hashed_password=hashed_pw)
+            session.add(new_user)
+            session.commit()
+            return f"User created successfully. ID: {user_id}"
+        except IntegrityError:
+            session.rollback()
+            return "Database error creating user."
 
-        response.raise_for_status()
-        data = response.json()
-        logger.info(f"Successfully retrieved {len(data)} flashcards.")
-        return data
+def login_user(username: str, password: str) -> str:
+    global current_user_id
 
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Network or backend error while fetching flashcards: {e}")
-        return {"error": f"Failed to connect to backend at {BACKEND_URL}", "details": str(e)}
+    with Session() as session:
+        user = session.scalars(select(User).where(User.username == username)).first()
+        if not user:
+            return "User not found."
 
-    except ValueError:
-        logger.error("Failed to parse JSON from backend.")
-        return {"error": "Invalid JSON response from backend."}
+        if not auth.check_password(password, user.hashed_password):
+            return "Incorrect password."
 
+        sess_id = str(uuid.uuid4())
+        try:
+            new_sess = Active_Session(id=sess_id, user_id=user.id)
+            session.add(new_sess)
+            session.commit()
+            current_user_id = user.id
+            return f"Login successful. Session ID: {sess_id}"
+        except IntegrityError:
+            session.rollback()
+            return "Login failed due to database error."
 
-def add_flashcard(question, answer, topic=""):
-    """
-    Add a new flashcard to the backend API.
-    Args:
-        question (str): Flashcard question text.
-        answer (str): Flashcard answer text.
-        topic (str): Optional topic/category.
-    Returns:
-        dict: Result from backend or error message.
-    """
-    try:
-        url = f"{BACKEND_URL}/flashcards"
-        payload = {
-            "question": question,
-            "answer": answer,
-            "topic": topic
-        }
+def logout_user() -> str:
+    global current_user_id
+    if not current_user_id:
+        return "No user is currently logged in."
+    with Session() as session:
+        session.execute(delete(Active_Session).where(Active_Session.user_id == current_user_id))
+        session.commit()
+    current_user_id = None
+    return "Logged out successfully."
 
-        logger.info(f"Sending new flashcard to {url}: {payload}")
-        response = requests.post(url, json=payload, timeout=5)
-        response.raise_for_status()
+# ---------- FLASHCARD MANAGEMENT ----------
+def list_sets() -> str:
+    if not current_user_id:
+        return "You must be logged in."
+    with Session() as session:
+        sets = session.scalars(select(FlashcardSet).where(FlashcardSet.user_id == current_user_id)).all()
+        if not sets:
+            return "No flashcard sets found."
+        return "\n".join([f"{s.id}: {s.title}" for s in sets])
 
-        data = response.json()
-        logger.info("Successfully added flashcard.")
-        return data
+def list_flashcards(set_id: str) -> str:
+    if not current_user_id:
+        return "You must be logged in."
+    with Session() as session:
+        flashcards = session.scalars(
+            select(Flashcard).where(Flashcard.flashcard_set_id == set_id)
+        ).all()
+        if not flashcards:
+            return "No flashcards found."
+        return "\n\n".join([f"{f.id}\nFront: {f.front}\nBack: {f.back}" for f in flashcards])
 
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Network or backend error while adding flashcard: {e}")
-        return {"error": f"Failed to connect to backend at {BACKEND_URL}", "details": str(e)}
+def create_flashcard_set(title: str) -> str:
+    if not current_user_id:
+        return "You must be logged in."
+    with Session() as session:
+        try:
+            set_id = str(uuid.uuid4())
+            new_set = FlashcardSet(id=set_id, title=title, user_id=current_user_id)
+            session.add(new_set)
+            session.commit()
+            return f"Set '{title}' created. ID: {set_id}"
+        except IntegrityError:
+            session.rollback()
+            return "Set title already exists."
 
-    except ValueError:
-        logger.error("Failed to parse backend response.")
-        return {"error": "Invalid JSON response from backend."}
+def create_flashcard(set_id: str, front: str, back: str) -> str:
+    if not current_user_id:
+        return "You must be logged in."
+    with Session() as session:
+        try:
+            flash_id = str(uuid.uuid4())
+            new_card = Flashcard(id=flash_id, front=front, back=back, flashcard_set_id=set_id)
+            session.add(new_card)
+            session.commit()
+            return f"Flashcard created. ID: {flash_id}"
+        except IntegrityError:
+            session.rollback()
+            return "Error creating flashcard."
+
+def update_flashcard(set_id: str, flashcard_id: str, front: str = None, back: str = None) -> str:
+    if not current_user_id:
+        return "You must be logged in."
+    with Session() as session:
+        values = {}
+        if front:
+            values["front"] = front
+        if back:
+            values["back"] = back
+        if not values:
+            return "No updates provided."
+
+        try:
+            stmt = (
+                update(Flashcard)
+                .where(Flashcard.id == flashcard_id, Flashcard.flashcard_set_id == set_id)
+                .values(**values)
+            )
+            result = session.execute(stmt)
+            session.commit()
+            if result.rowcount == 0:
+                return "Flashcard not found."
+            return "Flashcard updated successfully."
+        except IntegrityError:
+            session.rollback()
+            return "Error updating flashcard."
+
+def delete_flashcard(set_id: str, flashcard_id: str) -> str:
+    if not current_user_id:
+        return "You must be logged in."
+    with Session() as session:
+        result = session.execute(
+            delete(Flashcard).where(Flashcard.id == flashcard_id, Flashcard.flashcard_set_id == set_id)
+        )
+        session.commit()
+        if result.rowcount == 0:
+            return "Flashcard not found."
+        return "Flashcard deleted."
