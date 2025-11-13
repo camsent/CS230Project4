@@ -123,7 +123,8 @@ async def create_upload_file(file: UploadFile, title: Annotated[str, Form()], us
             raise HTTPException(status_code=400, detail="Error uploading flashcards")
             
         if not flash_set: 
-            flash_set_id = create_flashcard_set(session, title, user_id)
+            flash_set = create_flashcard_set(session, title, user_id)
+            flash_set_id = flash_set.id
         else: 
             flash_set_id = flash_set.id
         
@@ -238,7 +239,7 @@ def delete_flashcard_set(set_id: int, user_id: Annotated[str, Depends(middleware
 
 
 
-############ ADMIN ##############
+############################################################ ADMIN ##############################################################
 @router.get("/admin/active_users")
 def get_active_users():
     with Session() as session: 

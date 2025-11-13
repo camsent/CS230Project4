@@ -2,30 +2,25 @@ import cv2
 import pytesseract
 import os
 import numpy as np
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-
-image_path = "/Users/samsmith/Desktop/COW_Courses/softwareEngineering/project4/IMG_3231.jpeg"
-
-if not os.path.exists(image_path):
-    raise FileNotFoundError(f"Image not found: {image_path}")
-
-img = cv2.imread(image_path)
-if img is None:
-    raise ValueError(f"cv2 could not read the image file: {image_path}")
-=======
-=======
->>>>>>> 52f251177092530fb6a39fe43335905829d397a9
-from transformers import pipeline
 import requests
-from huggingface_hub import InferenceClient
+
+# image_path = "/Users/samsmith/Desktop/COW_Courses/softwareEngineering/project4/IMG_3231.jpeg"
+
+# if not os.path.exists(image_path):
+#     raise FileNotFoundError(f"Image not found: {image_path}")
+
+# img = cv2.imread(image_path)
+# if img is None:
+#     raise ValueError(f"cv2 could not read the image file: {image_path}")
+# from transformers import pipeline
+# import requests
+# from huggingface_hub import InferenceClient
 
 
-<<<<<<< HEAD
->>>>>>> e6260db8ada0924a339fa6da5cdbda3c64e97dad
-=======
->>>>>>> 52f251177092530fb6a39fe43335905829d397a9
+# <<<<<<< HEAD
+# >>>>>>> e6260db8ada0924a339fa6da5cdbda3c64e97dad
+# =======
+# >>>>>>> 52f251177092530fb6a39fe43335905829d397a9
 
 # get grayscale image
 def get_grayscale(image):
