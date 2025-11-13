@@ -11,6 +11,3 @@ huggingface-hub
 transformers
 torch
 requests
-nodejs
-vite 
-react-icons
