@@ -61,7 +61,6 @@ def login(user_data: UserCreate, response: Response):
     user = auth.get_user_data_login(data["username"])
     if not user:
         raise HTTPException(status_code=401, detail="User does not exist")
-
     
     check_pw = auth.check_password(data["password"], user.hashed_password)
     
@@ -70,7 +69,7 @@ def login(user_data: UserCreate, response: Response):
    
     with Session() as session: 
        try: 
-            active_user = session.scalars(select(Active_Session).where(Active_Session.user_id == user.id))
+            active_user = session.scalars(select(Active_Session).where(Active_Session.user_id == user.id)).first()
             if active_user: 
                raise HTTPException(status_code=400, detail="User already logged in")
            
@@ -99,8 +98,23 @@ def login(user_data: UserCreate, response: Response):
     return {"message": "Login successful", "user_id": user.id}
 
 
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(user_id: Annotated[str, Depends(middleware.get_current_user)]):
+    with Session() as session: 
+        try: 
+            stmt = delete(Active_Session).where(Active_Session.user_id == user_id)
+            
+            session.execute(stmt)
+            session.commit()
+        except IntegrityError: 
+            raise HTTPException(status_code=400, detail="Error logging out user")
+        
+        return {"message": "Successful logout"}
+        
+
+
 @router.post("/upload")
-async def create_upload_file(file: UploadFile, title: Annotated[str, Form()], user_id: Annotated[str, Depends(middleware.get_current_user)] ):   #create_upload_files(files: list[UploadFile]) -> FOR MULTIPLE FILES IF NEEDED
+async def create_upload_file(file: UploadFile, title: Annotated[str, Form()], user_id: Annotated[str, Depends(middleware.get_current_user)] ): # create_upload_files(files: list[UploadFile]) -> FOR MULTIPLE FILES IF NEEDED
     contents = await file.read()
 
     img_text = utils.extract_image_text(contents)
@@ -125,6 +139,7 @@ async def create_upload_file(file: UploadFile, title: Annotated[str, Form()], us
         if not flash_set: 
             flash_set = create_flashcard_set(session, title, user_id)
             flash_set_id = flash_set.id
+            
         else: 
             flash_set_id = flash_set.id
         
@@ -149,9 +164,29 @@ async def create_upload_file(file: UploadFile, title: Annotated[str, Form()], us
         except IntegrityError: 
             raise HTTPException(status_code=400, detail="Error uploading flashcards")   
     
+ 
+@router.get("/home")
+def get_flashcard_sets(user_id: Annotated[str, Depends(middleware.get_current_user)]):
+    with Session() as session:
+        flashcard_sets = session.scalars(
+            select(FlashcardSet).where(FlashcardSet.user_id == user_id)
+        ).all()
+
+        if not flashcard_sets:
+            return {"message": "No flashcards"}
+
+        result = []
+        for fs in flashcard_sets:
+            result.append({
+                "id": fs.id,
+                "title": fs.title
+            })
+
+        return result 
     
+
 @router.get("/get/flashcard/set/{set_id}")
-def get_flashcard_set(set_id: int, user_id: Annotated[str, Depends(middleware.get_current_user)]):
+def get_flashcard_set(set_id: str, user_id: Annotated[str, Depends(middleware.get_current_user)]):
     with Session() as session: 
         flashcard_set = session.scalars(
             select(FlashcardSet)
@@ -178,27 +213,30 @@ def get_flashcard_set(set_id: int, user_id: Annotated[str, Depends(middleware.ge
             ]
         }
         
-        return result            
-        
-#add middleware and get user vvv
-@router.patch("/flashcards/set/{set_id}")
-def update_flashcard_setname(set_id: int, set_title: FlashcardSetUpdate, user_id: Annotated[str, Depends(middleware.get_current_user)]):
+        return result  
     
-    with Session() as session: 
-        try: 
-            stmt = (
-                update(FlashcardSet)
-                .where(FlashcardSet.id == set_id)
-                .where(FlashcardSet.user_id == user_id)
-                .values(**set_title.model_dump(exclude_unset=True))
-            )
+   
+
+        
+# #add middleware and get user vvv
+# @router.patch("/flashcards/set/{set_id}")
+# def update_flashcard_setname(set_id: int, set_title: FlashcardSetUpdate, user_id: Annotated[str, Depends(middleware.get_current_user)]):
+    
+#     with Session() as session: 
+#         try: 
+#             stmt = (
+#                 update(FlashcardSet)
+#                 .where(FlashcardSet.id == set_id)
+#                 .where(FlashcardSet.user_id == user_id)
+#                 .values(**set_title.model_dump(exclude_unset=True))
+#             )
             
-            session.execute(stmt)
-            session.commit()
+#             session.execute(stmt)
+#             session.commit()
             
-        except IntegrityError: 
-            session.rollback()
-            raise HTTPException(status_code=400, detail="Error updating flashcard set title")
+#         except IntegrityError: 
+#             session.rollback()
+#             raise HTTPException(status_code=400, detail="Error updating flashcard set title")
     
 
 #add middleware and get user vvv
@@ -238,8 +276,7 @@ def delete_flashcard_set(set_id: int, user_id: Annotated[str, Depends(middleware
     
 
 
-
-############################################################ ADMIN ##############################################################
+############################################################ ADMIN ##########################################################################
 @router.get("/admin/active_users")
 def get_active_users():
     with Session() as session: 

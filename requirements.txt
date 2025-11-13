@@ -10,6 +10,7 @@ pytesseract
 huggingface-hub
 transformers
 torch
+<<<<<<< HEAD
 requests
 python-dotenv
 
@@ -19,3 +20,6 @@ python-dotenv
 
 
 
+=======
+requests
+>>>>>>> Development
