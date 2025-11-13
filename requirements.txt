@@ -1,11 +1,13 @@
-fastapi
+fastapi[standard]
 uvicorn
 sqlalchemy
 pydantic
 python-dotenv
 argon2-cffi
-
-Frontend
-- nodejs
-- vite
-- react-icons
+python-multipart
+opencv-python
+pytesseract
+huggingface-hub
+transformers
+torch
+requests

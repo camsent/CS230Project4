@@ -1,0 +1,76 @@
+#studying {
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 20px;
+    align-items: center;
+    background: hsl(124 3.2% 25.1%);
+    color: ghostwhite;
+    border-radius: 0;
+    padding: 30px 40px;
+    box-shadow: 0 0 50px rgba(0, 0, 0, .1);
+    box-sizing: border-box;
+}
+
+#flashcard {
+    display: flex;
+    width: 80%;
+    height: 20vw;
+    justify-content: center;
+    align-items: center;
+    font-size: xx-large;
+    background: #f0f0f0;
+    color: #333;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    box-shadow: none;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+/* Prevent glow or shadow on hover/focus */
+#flashcard:hover,
+#flashcard:focus,
+#flashcard:active {
+    box-shadow: none;
+    outline: none;
+    border-color: transparent;
+}
+
+/* Buttons */
+#buttons {
+    width: 100%
+}
+
+
+button {
+    width: 100%;
+    height: 45px;
+    background: #fff;
+    border-radius: 8px;
+    border: none;
+    box-shadow: none; /* remove glow shadow */
+    cursor: pointer;
+    font-size: 16px;
+    color: #333;
+    font-weight: 700;
+    text-align: center;
+}
+
+button .icon {
+    color: #333;
+}
+
+/* Hover effect without glow */
+button:hover {
+    background: #e6e6e6;
+    box-shadow: none;
+}
+
+/* Remove focus/active outlines */
+button:focus,
+button:active {
+    outline: none;
+    box-shadow: none;
+}
