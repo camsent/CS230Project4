@@ -3,29 +3,31 @@ import pytesseract
 import os
 import numpy as np
 <<<<<<< HEAD
-<<<<<<< HEAD
-
-
-image_path = "/Users/samsmith/Desktop/COW_Courses/softwareEngineering/project4/IMG_3231.jpeg"
-
-if not os.path.exists(image_path):
-    raise FileNotFoundError(f"Image not found: {image_path}")
-
-img = cv2.imread(image_path)
-if img is None:
-    raise ValueError(f"cv2 could not read the image file: {image_path}")
 =======
-=======
->>>>>>> 52f251177092530fb6a39fe43335905829d397a9
 from transformers import pipeline
+>>>>>>> Development
 import requests
-from huggingface_hub import InferenceClient
+
+# image_path = "/Users/samsmith/Desktop/COW_Courses/softwareEngineering/project4/IMG_3231.jpeg"
+
+# if not os.path.exists(image_path):
+#     raise FileNotFoundError(f"Image not found: {image_path}")
+
+# img = cv2.imread(image_path)
+# if img is None:
+#     raise ValueError(f"cv2 could not read the image file: {image_path}")
+# from transformers import pipeline
+# import requests
+# from huggingface_hub import InferenceClient
 
 
 <<<<<<< HEAD
->>>>>>> e6260db8ada0924a339fa6da5cdbda3c64e97dad
+# <<<<<<< HEAD
+# >>>>>>> e6260db8ada0924a339fa6da5cdbda3c64e97dad
+# =======
+# >>>>>>> 52f251177092530fb6a39fe43335905829d397a9
 =======
->>>>>>> 52f251177092530fb6a39fe43335905829d397a9
+>>>>>>> Development
 
 # get grayscale image
 def get_grayscale(image):
@@ -156,9 +158,6 @@ def extract_image_text(contents):
 
     text = pytesseract.image_to_string(fixed, lang='eng')
     return text 
-<<<<<<< HEAD
-=======
-
 
 
 hf_token = os.getenv("HF_TOKEN")
@@ -172,14 +171,24 @@ headers = {
 #client = InferenceClient()
 def create_flashcards(text: str):
     prompt = f"""
-        Generate 3 study flashcards from this text. 
-        Format each flashcard as:
+        You are an AI that creates study flashcards.
 
-        Q: <question text>
-        A: <answer text>
-        Separate flashcards with the symbol |||
-        Text: {text}
-    """ 
+        From the text below, generate 3 flashcards in strict JSON format.
+        Each flashcard must have:
+        - "question": the question text
+        - "answer": the answer text
+
+        Return ONLY valid JSON, like this example:
+
+        [
+        {{"question": "What is photosynthesis?", "answer": "It is the process by which plants convert light into energy."}},
+        {{"question": "Where does photosynthesis occur?", "answer": "In the chloroplasts of plant cells."}},
+        {{"question": "What gas is produced during photosynthesis?", "answer": "Oxygen."}}
+        ]
+
+        Text:
+        {text}
+    """
     payload = {
         "messages": [
             {
@@ -199,26 +208,15 @@ def create_flashcards(text: str):
 
     data = response.json()
 
+    # return data["choices"][0]["message"]["content"]
+    #print("PRINTING FLASHCARD STRING: ")
     return data["choices"][0]["message"]["content"]
-    
-    
-# TODO: parse response data into a list of flash cards
 
-def to_flashcard_list(flashcards): 
-    
-    prams = {"Q", "A", "|||"}
-    
-    flashcard_generatory = dict()
-    result = []
-    
-    flash_list = flashcards.split()
-    
-    idx = 0 
-    while idx < len(flash_list): 
-        constructor = []
-        if flash_list[idx] == "A" or flash_list[idx] == "Q": 
-            pass
+
+
+
+
+
     
     
-    print(flash_list) 
->>>>>>> e6260db8ada0924a339fa6da5cdbda3c64e97dad
+

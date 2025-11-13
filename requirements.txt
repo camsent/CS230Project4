@@ -5,6 +5,21 @@ pydantic
 python-dotenv
 argon2-cffi
 python-multipart
+opencv-python
+pytesseract
+huggingface-hub
+transformers
+torch
+<<<<<<< HEAD
+requests
+python-dotenv
 
 
 
+
+
+
+
+=======
+requests
+>>>>>>> Development

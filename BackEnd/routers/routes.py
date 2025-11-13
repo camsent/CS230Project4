@@ -1,17 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, status, Response, UploadFile, Form
 from typing import Annotated
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, delete, insert
 from sqlalchemy.exc import IntegrityError
 
 from BackEnd import UPLOAD_DIR
 from BackEnd.models import User, Active_Session, FlashcardSet, Flashcard
-from BackEnd.schema import UserCreate, FlashcardUpdate, FlashcardSetUpdate
+from BackEnd.schema import UserCreate, FlashcardUpdate, FlashcardSetUpdate, FlashcardSetCreate
 from BackEnd.database import Session
 from BackEnd.auth import auth
 from BackEnd.middleware import middleware
 from BackEnd.internal import utils
 
 import uuid
+import json
 
 router = APIRouter()
 
@@ -60,7 +61,6 @@ def login(user_data: UserCreate, response: Response):
     user = auth.get_user_data_login(data["username"])
     if not user:
         raise HTTPException(status_code=401, detail="User does not exist")
-
     
     check_pw = auth.check_password(data["password"], user.hashed_password)
     
@@ -69,6 +69,10 @@ def login(user_data: UserCreate, response: Response):
    
     with Session() as session: 
        try: 
+            active_user = session.scalars(select(Active_Session).where(Active_Session.user_id == user.id)).first()
+            if active_user: 
+               raise HTTPException(status_code=400, detail="User already logged in")
+           
             sess_id = str(uuid.uuid4())
             
             new_session = Active_Session(
@@ -94,21 +98,95 @@ def login(user_data: UserCreate, response: Response):
     return {"message": "Login successful", "user_id": user.id}
 
 
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(user_id: Annotated[str, Depends(middleware.get_current_user)]):
+    with Session() as session: 
+        try: 
+            stmt = delete(Active_Session).where(Active_Session.user_id == user_id)
+            
+            session.execute(stmt)
+            session.commit()
+        except IntegrityError: 
+            raise HTTPException(status_code=400, detail="Error logging out user")
+        
+        return {"message": "Successful logout"}
+        
+
+
 @router.post("/upload")
-async def create_upload_file(file: UploadFile):   #create_upload_files(files: list[UploadFile]) -> FOR MULTIPLE FILES IF NEEDED
+async def create_upload_file(file: UploadFile, title: Annotated[str, Form()], user_id: Annotated[str, Depends(middleware.get_current_user)] ): # create_upload_files(files: list[UploadFile]) -> FOR MULTIPLE FILES IF NEEDED
     contents = await file.read()
 
-    print("File size in bytes:", len(contents))
-    print("Content type:", file.content_type)
-
-    
     img_text = utils.extract_image_text(contents)
-    print(img_text)
+    flash_data = utils.create_flashcards(img_text)
+    flash_data = flash_data.strip()
+    flash_data = json.loads(flash_data)
     
+    # for i in range(len(flash_data)): 
+    #     print(flash_data[i])
     
+    # Checking if set exists
+    with Session() as session: 
+        try: 
+            flash_set = session.scalars(
+                select(FlashcardSet)
+                .where(FlashcardSet.title == title)
+                .where(FlashcardSet.user_id == user_id)
+                ).first()
+        except IntegrityError: 
+            raise HTTPException(status_code=400, detail="Error uploading flashcards")
+            
+        if not flash_set: 
+            flash_set = create_flashcard_set(session, title, user_id)
+            flash_set_id = flash_set.id
+            
+        else: 
+            flash_set_id = flash_set.id
+        
+        try: 
+            for i in range(len(flash_data)): 
+                id = str(uuid.uuid4())
+                new_flashcard = Flashcard(
+                    id = id,
+                    front = flash_data[i]["question"],
+                    back = flash_data[i]["answer"],
+                    flashcard_set_id = flash_set_id
+                )
+                session.add(new_flashcard)
+                
+            session.commit()
+            
+            return {
+                "message": "Flashcards uploaded successfully",
+                "set_id": flash_set.id,
+                "num_flashcards": len(flash_data)
+            }
+        except IntegrityError: 
+            raise HTTPException(status_code=400, detail="Error uploading flashcards")   
     
+ 
+@router.get("/home")
+def get_flashcard_sets(user_id: Annotated[str, Depends(middleware.get_current_user)]):
+    with Session() as session:
+        flashcard_sets = session.scalars(
+            select(FlashcardSet).where(FlashcardSet.user_id == user_id)
+        ).all()
+
+        if not flashcard_sets:
+            return {"message": "No flashcards"}
+
+        result = []
+        for fs in flashcard_sets:
+            result.append({
+                "id": fs.id,
+                "title": fs.title
+            })
+
+        return result 
+    
+
 @router.get("/get/flashcard/set/{set_id}")
-def get_flashcard_set(set_id: int, user_id: Annotated[str, Depends(middleware.get_current_user)]):
+def get_flashcard_set(set_id: str, user_id: Annotated[str, Depends(middleware.get_current_user)]):
     with Session() as session: 
         flashcard_set = session.scalars(
             select(FlashcardSet)
@@ -170,20 +248,21 @@ def get_flashcard_sets(user_id: Annotated[str, Depends(middleware.get_current_us
 @router.patch("/flashcards/set/{set_id}")
 def update_flashcard_setname(set_id: int, set_title: FlashcardSetUpdate, user_id: Annotated[str, Depends(middleware.get_current_user)]):
     
-    with Session() as session: 
-        try: 
-            stmt = (
-                update(FlashcardSet)
-                .where(FlashcardSet.id == set_id, FlashcardSet.user_id == user_id)
-                .values(**set_title.model_dump(exclude_unset=True))
-            )
+#     with Session() as session: 
+#         try: 
+#             stmt = (
+#                 update(FlashcardSet)
+#                 .where(FlashcardSet.id == set_id)
+#                 .where(FlashcardSet.user_id == user_id)
+#                 .values(**set_title.model_dump(exclude_unset=True))
+#             )
             
-            session.execute(stmt)
-            session.commit()
+#             session.execute(stmt)
+#             session.commit()
             
-        except IntegrityError: 
-            session.rollback()
-            raise HTTPException(status_code=400, detail="Error updating flashcard set title")
+#         except IntegrityError: 
+#             session.rollback()
+#             raise HTTPException(status_code=400, detail="Error updating flashcard set title")
     
 
 #add middleware and get user vvv
@@ -221,3 +300,64 @@ def delete_flashcard_set(set_id: int, user_id: Annotated[str, Depends(middleware
             raise HTTPException(status_code=400, detail="Error deleting flashcard set")
         
     
+
+
+############################################################ ADMIN ##########################################################################
+@router.get("/admin/active_users")
+def get_active_users():
+    with Session() as session: 
+        try: 
+            act_sessions = session.scalars(select(Active_Session)).all()
+            if not act_sessions: 
+                print("NO ACTIVE SESSIONS")
+                return
+            print("PRINTING USER SESSIONS ---------------------------------------------\n")
+            
+            for sess in act_sessions:
+                print(sess.to_string(sess.id, sess.user_id))
+           
+            print("------------------------------------------------------------")
+           
+        except IntegrityError: 
+            raise HTTPException(status_code=400, detail="Error getting active sessions")
+
+@router.get("/admin/all-users")
+def get_all_users():
+    with Session() as session: 
+        try: 
+            users =  session.scalars(select(User)).all()
+            if not users: 
+                print("NO USERS")
+                return
+            print("PRINTING USERS ---------------------------------------------\n")
+            
+            for user in users:
+                print(user.to_string(user.id, user.username))
+           
+            print("------------------------------------------------------------")
+           
+        except IntegrityError: 
+            raise HTTPException(status_code=400, detail="Error getting active sessions")
+        
+        
+        
+###########################################    HELPER METHODS    ###############################################
+        
+def create_flashcard_set(session, set_title, user_id): 
+        set_id = uuid.uuid4()
+        try: 
+           new_flashcard_set = FlashcardSet(
+               id = str(uuid.uuid4()),
+               title = set_title ,
+               user_id = user_id,
+           )
+           
+           session.add(new_flashcard_set)
+           session.commit()
+           
+           print({"ID: ": set_id, "TITLE: ": set_title})
+           return new_flashcard_set
+        except IntegrityError: 
+           session.rollback()
+           raise HTTPException(status_code=400, detail="Error creating new flashcard set") 
+        
