@@ -150,14 +150,24 @@ headers = {
 #client = InferenceClient()
 def create_flashcards(text: str):
     prompt = f"""
-        Generate 3 study flashcards from this text. 
-        Format each flashcard as:
+        You are an AI that creates study flashcards.
 
-        Q: <question text>
-        A: <answer text>
-        Separate flashcards with the symbol |||
-        Text: {text}
-    """ 
+        From the text below, generate 3 flashcards in strict JSON format.
+        Each flashcard must have:
+        - "question": the question text
+        - "answer": the answer text
+
+        Return ONLY valid JSON, like this example:
+
+        [
+        {{"question": "What is photosynthesis?", "answer": "It is the process by which plants convert light into energy."}},
+        {{"question": "Where does photosynthesis occur?", "answer": "In the chloroplasts of plant cells."}},
+        {{"question": "What gas is produced during photosynthesis?", "answer": "Oxygen."}}
+        ]
+
+        Text:
+        {text}
+    """
     payload = {
         "messages": [
             {
@@ -177,25 +187,15 @@ def create_flashcards(text: str):
 
     data = response.json()
 
+    # return data["choices"][0]["message"]["content"]
+    #print("PRINTING FLASHCARD STRING: ")
     return data["choices"][0]["message"]["content"]
-    
-    
-# TODO: parse response data into a list of flash cards
 
-def to_flashcard_list(flashcards): 
-    
-    prams = {"Q", "A", "|||"}
-    
-    flashcard_generatory = dict()
-    result = []
-    
-    flash_list = flashcards.split()
-    
-    idx = 0 
-    while idx < len(flash_list): 
-        constructor = []
-        if flash_list[idx] == "A" or flash_list[idx] == "Q": 
-            pass
+
+
+
+
+
     
     
-    print(flash_list) 
+
