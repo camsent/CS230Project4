@@ -3,6 +3,10 @@ from BackEnd import app
 from BackEnd.routers import routes as core_routes
 #from BackEnd.internal import admin as admin_routes
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app.include_router(core_routes.router)
 #app.include_router(admin_routes.router)
