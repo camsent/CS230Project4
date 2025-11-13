@@ -4,9 +4,10 @@ from BackEnd.auth.auth import auth
 from sqlalchemy import select, update, delete
 from sqlalchemy.exc import IntegrityError
 import uuid
+import json
 
-# global login state
-current_user_id = None
+current_user_id = None  # holds current logged-in user id
+
 
 # ---------- USER AUTH ----------
 def register_user(username: str, password: str) -> str:
@@ -30,6 +31,7 @@ def register_user(username: str, password: str) -> str:
             session.rollback()
             return "Database error creating user."
 
+
 def login_user(username: str, password: str) -> str:
     global current_user_id
 
@@ -52,6 +54,7 @@ def login_user(username: str, password: str) -> str:
             session.rollback()
             return "Login failed due to database error."
 
+
 def logout_user() -> str:
     global current_user_id
     if not current_user_id:
@@ -61,6 +64,7 @@ def logout_user() -> str:
         session.commit()
     current_user_id = None
     return "Logged out successfully."
+
 
 # ---------- FLASHCARD MANAGEMENT ----------
 def list_sets() -> str:
@@ -72,6 +76,7 @@ def list_sets() -> str:
             return "No flashcard sets found."
         return "\n".join([f"{s.id}: {s.title}" for s in sets])
 
+
 def list_flashcards(set_id: str) -> str:
     if not current_user_id:
         return "You must be logged in."
@@ -82,6 +87,7 @@ def list_flashcards(set_id: str) -> str:
         if not flashcards:
             return "No flashcards found."
         return "\n\n".join([f"{f.id}\nFront: {f.front}\nBack: {f.back}" for f in flashcards])
+
 
 def create_flashcard_set(title: str) -> str:
     if not current_user_id:
@@ -97,6 +103,7 @@ def create_flashcard_set(title: str) -> str:
             session.rollback()
             return "Set title already exists."
 
+
 def create_flashcard(set_id: str, front: str, back: str) -> str:
     if not current_user_id:
         return "You must be logged in."
@@ -110,6 +117,7 @@ def create_flashcard(set_id: str, front: str, back: str) -> str:
         except IntegrityError:
             session.rollback()
             return "Error creating flashcard."
+
 
 def update_flashcard(set_id: str, flashcard_id: str, front: str = None, back: str = None) -> str:
     if not current_user_id:
@@ -138,6 +146,7 @@ def update_flashcard(set_id: str, flashcard_id: str, front: str = None, back: st
             session.rollback()
             return "Error updating flashcard."
 
+
 def delete_flashcard(set_id: str, flashcard_id: str) -> str:
     if not current_user_id:
         return "You must be logged in."
@@ -149,3 +158,34 @@ def delete_flashcard(set_id: str, flashcard_id: str) -> str:
         if result.rowcount == 0:
             return "Flashcard not found."
         return "Flashcard deleted."
+
+
+# ---------- EXPORT ----------
+def export_flashcard_sets_to_json() -> str:
+    """Export all flashcard sets and flashcards for the current user as JSON."""
+    if not current_user_id:
+        return "You must be logged in."
+
+    with Session() as session:
+        sets = session.scalars(
+            select(FlashcardSet).where(FlashcardSet.user_id == current_user_id)
+        ).all()
+
+        if not sets:
+            return "No flashcard sets found."
+
+        data = []
+        for s in sets:
+            flashcards = session.scalars(
+                select(Flashcard).where(Flashcard.flashcard_set_id == s.id)
+            ).all()
+            data.append({
+                "set_id": s.id,
+                "title": s.title,
+                "flashcards": [
+                    {"id": f.id, "front": f.front, "back": f.back}
+                    for f in flashcards
+                ],
+            })
+
+        return json.dumps(data, indent=4)

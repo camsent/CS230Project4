@@ -1,32 +1,58 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './HomePage.css'
-import { FaPen, FaTrash } from "react-icons/fa"
+import { FaPen, FaTrash } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = 'http://127.0.0.1:8000';
 
-const myData = [
-  { id: 1, content: "Item 1" },
-  { id: 2, content: "Item 2" },
-  { id: 3, content: "Item 3" },
-  { id: 4, content: "Item 4" },
-  { id: 5, content: "Item 5" },
+export async function getSets() {
+  const response = await fetch(`${API_URL}/home`, {        
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+ 
+  if (!response.ok) {
+    throw new Error('Failed to fetch sets');
+  }
 
-];
+  const data = await response.json();
 
+  // Transform backend data into the same shape as `myData`
+  const formattedData = data.map(item => ({
+    id: item.id,
+    title: item.title,
+  }));
+
+  return formattedData;
+}
 
 const HomePage = () => {
+  const [myData, setMyData] = useState([]);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const sets = await getSets();
+        setMyData(sets);
+      } catch (error) {
+        console.error('Error fetching sets:', error);
+      }
+    }
+    fetchData();
+  }, []);
+
   const handleClick = (id) => {
-    navigate(`/study/${id}`); // navigate to another page (dynamic route)
+    navigate(`/study/${id}`);
   };
 
   const handleDelete = (e, item) => {
     e.stopPropagation();
-    const confirmed = window.confirm(`Are you sure you want to delete "${item.content}"?`);
+    const confirmed = window.confirm(`Are you sure you want to delete "${item.title}"?`);
     if (confirmed) {
       console.log(`Deleted item with id: ${item.id}`);
-      // Your delete logic here (e.g., API call or state update)
+      // TODO: Add API delete or state update
     }
   };
 
@@ -42,7 +68,7 @@ const HomePage = () => {
             style={{ cursor: "pointer" }}
             id="card"
           >
-            {item.content}
+            {item.title}
             <br />
             <br />
             <div id="buttons">
@@ -54,9 +80,7 @@ const HomePage = () => {
               >
                 <FaPen className='icon' />
               </button>
-              <button
-                onClick={(e) => handleDelete(e, item)}
-              >
+              <button onClick={(e) => handleDelete(e, item)}>
                 <FaTrash className='icon2' />
               </button>
             </div>
@@ -64,10 +88,7 @@ const HomePage = () => {
         ))}
       </div>
     </div>
-
-    
   );
 };
-
 
 export default HomePage;
