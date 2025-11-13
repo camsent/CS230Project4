@@ -52,13 +52,12 @@ const HomePage = () => {
                   navigate(`/edit/${item.id}`);
                 }}
               >
-                <FaPen className='icon' />
+                <FaPen className='icon1' />
               </button>
               <button
                 onClick={(e) => handleDelete(e, item)}
-                style={{ color: "red" }}
               >
-                <FaTrash className='icon' />
+                <FaTrash className='icon2' />
               </button>
             </div>
           </div>

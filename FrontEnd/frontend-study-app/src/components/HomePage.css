@@ -1,3 +1,7 @@
+.container {
+    margin-top: 40px;
+}
+
 h1 {
     color: ghostwhite;
 }
@@ -49,6 +53,14 @@ button {
     color: #333;
     font-weight: 700;
     text-align: center;
+}
+
+button .icon1 {
+    color: #333;
+}
+
+button .icon2 {
+    color: red;
 }
 
 .wrapper .input-box{
