@@ -2,10 +2,7 @@ import cv2
 import pytesseract
 import os
 import numpy as np
-<<<<<<< HEAD
-=======
 from transformers import pipeline
->>>>>>> Development
 import requests
 
 # image_path = "/Users/samsmith/Desktop/COW_Courses/softwareEngineering/project4/IMG_3231.jpeg"
@@ -19,15 +16,6 @@ import requests
 # from transformers import pipeline
 # import requests
 # from huggingface_hub import InferenceClient
-
-
-<<<<<<< HEAD
-# <<<<<<< HEAD
-# >>>>>>> e6260db8ada0924a339fa6da5cdbda3c64e97dad
-# =======
-# >>>>>>> 52f251177092530fb6a39fe43335905829d397a9
-=======
->>>>>>> Development
 
 # get grayscale image
 def get_grayscale(image):

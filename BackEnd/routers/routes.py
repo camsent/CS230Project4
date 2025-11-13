@@ -245,8 +245,8 @@ def get_flashcard_sets(user_id: Annotated[str, Depends(middleware.get_current_us
         return result            
         
 #add middleware and get user vvv
-@router.patch("/flashcards/set/{set_id}")
-def update_flashcard_setname(set_id: int, set_title: FlashcardSetUpdate, user_id: Annotated[str, Depends(middleware.get_current_user)]):
+#@router.patch("/flashcards/set/{set_id}")
+#def update_flashcard_setname(set_id: int, set_title: FlashcardSetUpdate, user_id: Annotated[str, Depends(middleware.get_current_user)]):
     
 #     with Session() as session: 
 #         try: 
