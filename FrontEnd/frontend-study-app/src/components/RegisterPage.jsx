@@ -3,6 +3,7 @@ import './LoginPage.css'
 import { FaUser, FaLock } from "react-icons/fa"
 import { useNavigate, Link } from 'react-router-dom';
 
+
 const API_URL = 'http://127.0.0.1:8000';
 
 export async function registerUser(username, password) {
@@ -20,7 +21,7 @@ export async function registerUser(username, password) {
     }
     return await response.json();
 }
-
+ 
 
 const RegisterPage = ({ onChange }) => {
 
@@ -34,7 +35,6 @@ const RegisterPage = ({ onChange }) => {
 
         try {
             await registerUser(username, password);
-            // await loginUser(username, password); // auto-login after registration
             alert('Sign up successful! Redirecting to Login...');
             navigate('/');
         } catch (err) {
