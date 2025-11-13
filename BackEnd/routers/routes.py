@@ -135,6 +135,35 @@ def get_flashcard_set(set_id: int, user_id: Annotated[str, Depends(middleware.ge
             ]
         }
         
+        return result
+
+@router.get("/get/flashcard/sets")
+def get_flashcard_sets(user_id: Annotated[str, Depends(middleware.get_current_user)]):
+    with Session() as session: 
+        flashcard_sets = session.scalars(
+            select(FlashcardSet)
+            .where(FlashcardSet.user_id == user_id)
+        ).all()
+        
+        result = []
+        for flashcard_set in flashcard_sets: 
+            flashcards = session.scalars(
+                select(Flashcard)
+                .where(Flashcard.flashcard_set_id == flashcard_set.id)
+            ).all()
+            
+            result.append({
+                "set_id": flashcard_set.id,
+                "title": flashcard_set.title,
+                "flashcards": [
+                    {
+                        "id": flashcard.id,
+                        "front": flashcard.front,
+                        "back": flashcard.back
+                    } for flashcard in flashcards
+                ]
+            })
+        
         return result            
         
 #add middleware and get user vvv
