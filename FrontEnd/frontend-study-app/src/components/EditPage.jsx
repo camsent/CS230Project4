@@ -3,12 +3,16 @@ import './EditPage.css';
 import { FaTrash, FaSave } from "react-icons/fa";
 
 const initialData = [
-  { card_num: 1, front: "Item 1", back: "1 Item" },
-  { card_num: 2, front: "Item 2", back: "2 Item" },
-  { card_num: 3, front: "Item 3", back: "3 Item" },
-  { card_num: 4, front: "Item 4", back: "4 Item" },
-  { card_num: 5, front: "Item 5", back: "5 Item" },
+  { card_num: 1, front: "Mountain", back: "Large natural elevation of Earth’s surface" },
+  { card_num: 2, front: "Plateau", back: "High, flat landform" },
+  { card_num: 3, front: "Delta", back: "Sediment deposition at a river mouth" },
+  { card_num: 4, front: "Valley", back: "Low area between hills/mountains" },
+  { card_num: 5, front: "Archipelago", back: "Chain or group of islands" },
+  { card_num: 6, front: "Desert", back: "Dry region with little rainfall" },
+  { card_num: 7, front: "Glacier", back: "Slow-moving mass of ice" },
+  { card_num: 8, front: "Canyon", back: "Deep gorge with steep sides" },
 ];
+
 
 const EditPage = () => {
   const [cards, setCards] = useState(initialData);
