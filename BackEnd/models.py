@@ -27,7 +27,7 @@ class FlashcardSet(Base):
     __tablename__ = "flashcard_sets"
 
     id: Mapped[str] = mapped_column(primary_key=True)
-    title: Mapped[str] = mapped_column(unique=True, nullable=False)
+    title: Mapped[str] = mapped_column(nullable=False)
 
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
     user: Mapped["User"] = relationship(back_populates="flashcard_sets")
@@ -38,8 +38,8 @@ class FlashcardSet(Base):
     )
 
     @staticmethod
-    def to_string(title):
-        return f"TITLE: {title}"
+    def to_string(id, title, user_id):
+        return f"ID: {id}, TITLE: {title}, USER_ID: {user_id}"
 
 
 class Flashcard(Base):
@@ -63,7 +63,7 @@ class Flashcard(Base):
 class Active_Session(Base): 
     __tablename__ = "sessions"
     id: Mapped[str] = mapped_column(primary_key=True)
-    user_id: Mapped[str] = mapped_column(primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     
     @staticmethod
