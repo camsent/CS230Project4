@@ -190,11 +190,3 @@ def create_flashcards(text: str):
     #print("PRINTING FLASHCARD STRING: ")
     return data["choices"][0]["message"]["content"]
 
-
-
-
-
-
-    
-    
-
