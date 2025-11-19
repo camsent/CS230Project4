@@ -5,12 +5,11 @@ import { useNavigate } from 'react-router-dom';
 
 
 const myData = [
-  { id: 1, content: "Item 1" },
-  { id: 2, content: "Item 2" },
-  { id: 3, content: "Item 3" },
-  { id: 4, content: "Item 4" },
-  { id: 5, content: "Item 5" },
-
+  { id: 1, content: "World Capitals" },
+  { id: 2, content: "Landforms" },
+  { id: 3, content: "Continents & Oceans" },
+  { id: 4, content: "U.S. States & Abbreviations" },
+  { id: 5, content: "Major Rivers of the World" },
 ];
 
 
@@ -18,7 +17,7 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   const handleClick = (id) => {
-    navigate(`/study/${id}`); // navigate to another page (dynamic route)
+    navigate(`/study/`); // navigate to another page (dynamic route)
   };
 
   const handleDelete = (e, item) => {
@@ -49,7 +48,7 @@ const HomePage = () => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/edit/${item.id}`);
+                  navigate(`/edit/`);
                 }}
               >
                 <FaPen className='icon1' />

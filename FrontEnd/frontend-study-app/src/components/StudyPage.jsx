@@ -5,11 +5,14 @@ import { useNavigate } from 'react-router-dom';
 
 
 const myData = [
-  { card_num: 1, front: "Item 1", back: "1 Item" },
-  { card_num: 2, front: "Item 2", back: "2 Item" },
-  { card_num: 3, front: "Item 3", back: "3 Item" },
-  { card_num: 4, front: "Item 4", back: "4 Item" },
-  { card_num: 5, front: "Item 5", back: "5 Item" },
+  { card_num: 1, front: "France", back: "Paris" },
+  { card_num: 2, front: "Japan", back: "Tokyo" },
+  { card_num: 3, front: "Canada", back: "Ottawa" },
+  { card_num: 4, front: "Brazil", back: "Brasília" },
+  { card_num: 5, front: "Australia", back: "Canberra" },
+  { card_num: 6, front: "Egypt", back: "Cairo" },
+  { card_num: 7, front: "India", back: "New Delhi" },
+  { card_num: 8, front: "Kenya", back: "Nairobi" },
 ];
 
 const StudyPage = () => {
