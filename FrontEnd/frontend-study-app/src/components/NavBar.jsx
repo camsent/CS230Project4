@@ -13,10 +13,10 @@ export default function Navbar() {
                 <a href="/home">Home</a>
             </li>
             <li className='active'>
-                <a href="/Edit">Edit</a>
+                <a href="/edit">Edit</a>
             </li>
             <li className='active'>
-                <a href="/Upload">Upload</a>
+                <a href="/study">Upload</a>
             </li>
         </ul>
     </nav>
