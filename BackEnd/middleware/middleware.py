@@ -1,10 +1,12 @@
 from fastapi import Request, HTTPException, Cookie
 from sqlalchemy import select
-from BackEnd.models import User, Active_Session
+from BackEnd.models import Active_Session
 from BackEnd.database import Session
 
 
 def get_current_user(session_id: str = Cookie(None)):
+    print("COOKIE RECEIVED:", session_id)
+ 
     if not session_id:
         raise HTTPException(status_code=401, detail="No session cookie found")
     

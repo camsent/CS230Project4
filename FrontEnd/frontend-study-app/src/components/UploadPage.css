@@ -1,0 +1,101 @@
+h1 {
+    color: ghostwhite;
+}
+
+.container {
+    padding: 40px;
+    background: hsl(124 3.2% 25.1%);
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+#card_list {
+    width: 100vw;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 20px;
+    align-items: flex-start;
+    background: hsl(124 3.2% 25.1%);
+    color: ghostwhite;
+    border-radius: 0;
+    padding: 30px 40px;
+    box-shadow: 0 0 50px rgba(0, 0, 0, .1);
+    box-sizing: border-box;
+}
+
+#card {
+    flex: 0 0 calc(33.333% - 20px);
+    margin-bottom: 20px;
+    border: 1px solid black;
+    border-radius: 8px;
+    padding: 40px;
+    aspect-ratio: 7 / 3;
+    font-size: 30px;
+    text-align: center;
+    background: #333;
+    color: ghostwhite;
+}
+
+#card:hover {
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+}
+
+#buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+button {
+    width: 15%;
+    height: 45px;
+    background: #fff;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+    cursor: pointer;
+    font-size: 16px;
+    color: #333;
+    font-weight: 700;
+    text-align: center;
+}
+
+button .icon {
+    color: #333;
+}
+
+button .icon2 {
+    color: red;
+}
+
+/* Upload form layout â€” matches HomePage cards */
+form#card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 60%;
+    margin: 0 auto;
+    border: 1px solid black;
+    border-radius: 8px;
+    padding: 40px;
+    background: #333;
+    color: ghostwhite;
+}
+
+/* Basic input styling â€” simple and consistent */
+input[type="text"],
+input[type="file"] {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0 20px 0;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    color: #000;
+}
+
+input[type="text"]::placeholder {
+    color: darkgrey;
+}
