@@ -6,6 +6,8 @@ import HomePage from './components/homePage';
 import Navbar from './components/NavBar';
 import StudyPage from './components/StudyPage'
 import UploadPage from './components/UploadPage';
+import EditPage from './components/EditPage';
+import Matching from './components/Matching';
 
 function App() {
 
@@ -17,8 +19,13 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/home" element={<HomePage />} />
-        <Route path="/study/:setId" element={<StudyPage />} />
+        {
+        //<Route path="/study/:setId" element={<StudyPage />} />
+        }
         <Route path="/upload" element={<UploadPage />} />
+        <Route path="/study" element={<StudyPage />} />
+        <Route path="/edit" element={<EditPage />} />
+        <Route path="/matching" element={<Matching />} />
       </Routes>
     </Router>
     </>
