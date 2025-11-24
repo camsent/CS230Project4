@@ -102,7 +102,7 @@ def logout(user_id: Annotated[str, Depends(middleware.get_current_user)]):
 
 
 @router.post("/upload")
-async def create_upload_file(file: UploadFile, title: Annotated[str, Form()], user_id: Annotated[str, Depends(auth.get_current_user)] ): # create_upload_files(files: list[UploadFile]) -> FOR MULTIPLE FILES IF NEEDED
+async def create_upload_file(file: UploadFile, title: Annotated[str, Form()], user_id: Annotated[str, Depends(auth.get_current_user)]): # create_upload_files(files: list[UploadFile]) -> FOR MULTIPLE FILES IF NEEDED
     contents = await file.read()
 
     img_text = utils.extract_image_text(contents)

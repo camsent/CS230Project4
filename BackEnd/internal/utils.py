@@ -132,15 +132,15 @@ def extract_image_text(contents):
     thresh = thresholding(denoised)
     fixed = deskew(thresh)
 
-    pytesseract.pytesseract.tesseract_cmd = "/opt/homebrew/bin/tesseract"
+    tesseract_path = os.getenv("TESSERACT_CMD")
+    pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
     text = pytesseract.image_to_string(fixed, lang='eng')
     return text 
 
 
 hf_token = os.getenv("HF_TOKEN")
-API_URL = "https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3.1-8B-Instruct"
-
+API_URL = os.getenv("API_URL")
 headers = {
     "Authorization": f"Bearer {hf_token}",
     "Content-Type": "application/json"
@@ -186,7 +186,68 @@ def create_flashcards(text: str):
 
     data = response.json()
 
-    # return data["choices"][0]["message"]["content"]
-    #print("PRINTING FLASHCARD STRING: ")
+
     return data["choices"][0]["message"]["content"]
 
+
+def summarize_text(text): 
+    prompt = f"""
+        You are an AI that summarizes text for educational purposes.
+
+        Read the text below and summarize it in a clear, cohesive paragraph. 
+        Include key definitions, main points, and arguments, but write it as one flowing summary that a student could read to understand the material.
+
+        Text:
+        {text}
+    """
+    payload = {
+        "messages": [
+            {
+            "role": "user",
+            "content": prompt
+            }
+        ],
+        "model": "openai/gpt-oss-120b:fastest",  
+        "stream": False
+    }
+
+    response = requests.post(
+        "https://router.huggingface.co/v1/chat/completions",
+        headers=headers,
+        json=payload
+    )
+
+    data = response.json()
+
+    return data["choices"][0]["message"]["content"]
+
+def create_matching(text): 
+    prompt = f"""
+        You are an AI that summarizes text for educational purposes.
+
+        Read the text below and summarize it in a clear, cohesive paragraph. 
+        Include key definitions, main points, and arguments, but write it as one flowing summary that a student could read to understand the material.
+
+        Text:
+        {text}
+    """
+    payload = {
+        "messages": [
+            {
+            "role": "user",
+            "content": prompt
+            }
+        ],
+        "model": "openai/gpt-oss-120b:fastest",  
+        "stream": False
+    }
+
+    response = requests.post(
+        "https://router.huggingface.co/v1/chat/completions",
+        headers=headers,
+        json=payload
+    )
+
+    data = response.json()
+
+    return data["choices"][0]["message"]["content"] 

@@ -23,7 +23,7 @@ ALGORITHM = os.getenv("ALGORITHM")
 
 security = HTTPBearer()
 
-def create_token(user_id: str, expires_minutes: int = 20):
+def create_token(user_id, expires_minutes = 20):
     expire = datetime.now(timezone.utc) + timedelta(minutes=expires_minutes)
     payload = {"sub": user_id, "exp": expire}
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
