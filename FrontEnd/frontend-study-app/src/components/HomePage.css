@@ -2,6 +2,21 @@ h1 {
     color: ghostwhite;
 }
 
+.banner {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;  /* left + right alignment */
+  align-items: center;              /* vertically centered */
+  width: 100%;
+  padding: 0 20px;                  /* optional spacing */
+}
+
+.logout-button {
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+
 #card_list {
     width: 100vw;
     display: flex;

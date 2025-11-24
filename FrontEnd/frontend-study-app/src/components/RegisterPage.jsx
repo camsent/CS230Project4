@@ -3,7 +3,7 @@ import './LoginPage.css'
 import { FaUser, FaLock } from "react-icons/fa"
 import { useNavigate, Link } from 'react-router-dom';
 
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = '/api'; // instead of http://127.0.0.1:8000
 
 export async function registerUser(username, password) {
     const response = await fetch(`${API_URL}/register`, {

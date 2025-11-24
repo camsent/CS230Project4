@@ -3,13 +3,12 @@ import './LoginPage.css'
 import { FaUser, FaLock } from "react-icons/fa"
 import { useNavigate, Link } from 'react-router-dom';
 
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = '/api'; // instead of http://127.0.0.1:8000
 
 export async function loginUser(username, password) {
     const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', 
         body: JSON.stringify({ username, password }),
     });
 
@@ -17,8 +16,14 @@ export async function loginUser(username, password) {
         throw new Error('Login failed');
     }
 
-    return await response.json();
+    const data = await response.json();
+
+    // Save token in localStorage
+    localStorage.setItem('access_token', data.access_token);
+
+    return data;
 }
+
 
 const LoginPage = () => {
 

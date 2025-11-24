@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response, UploadFile, Form
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, Form
 from typing import Annotated
 from sqlalchemy import select, update, delete, insert
 from sqlalchemy.exc import IntegrityError
@@ -17,9 +18,24 @@ import json
 router = APIRouter()
 
 
-@router.get("/")
-def root(): 
-    return {"Hello": "World"}
+@router.get("/home")
+def get_flashcard_sets(user_id: Annotated[str, Depends(auth.get_current_user)]):
+    with Session() as session:
+        flashcard_sets = session.scalars(
+            select(FlashcardSet).where(FlashcardSet.user_id == user_id)
+        ).all()
+
+        if not flashcard_sets:
+            return {"message": "No flashcards"}
+
+        result = []
+        for fs in flashcard_sets:
+            result.append({
+                "id": fs.id,
+                "title": fs.title
+            })
+
+        return result 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register(user_data: UserCreate): 
@@ -54,8 +70,9 @@ def register(user_data: UserCreate):
 
     return result
 
+
 @router.post("/login")
-def login(user_data: UserCreate, response: Response):
+def login(user_data: UserCreate):
     data = user_data.model_dump()
     
     user = auth.get_user_data_login(data["username"])
@@ -257,6 +274,129 @@ def update_flashcard_setname(set_id: int, set_title: FlashcardSetUpdate, user_id
 #                 .values(**set_title.model_dump(exclude_unset=True))
 #             )
             
+    token = auth.create_token(user.id)
+    return {"access_token": token, "token_type": "bearer"}
+        
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(user_id: Annotated[str, Depends(middleware.get_current_user)]):
+    with Session() as session: 
+        try: 
+            stmt = delete(Active_Session).where(Active_Session.user_id == user_id)
+            
+            session.execute(stmt)
+            session.commit()
+        except IntegrityError: 
+            raise HTTPException(status_code=400, detail="Error logging out user")
+        
+        return {"message": "Successful logout"}
+        
+
+
+@router.post("/upload")
+async def create_upload_file(file: UploadFile, title: Annotated[str, Form()], user_id: Annotated[str, Depends(auth.get_current_user)] ): # create_upload_files(files: list[UploadFile]) -> FOR MULTIPLE FILES IF NEEDED
+    contents = await file.read()
+
+    img_text = utils.extract_image_text(contents)
+    flash_data = utils.create_flashcards(img_text)
+    flash_data = flash_data.strip()
+    flash_data = json.loads(flash_data)
+    
+    # for i in range(len(flash_data)): 
+    #     print(flash_data[i])
+    
+    # Checking if set exists
+    with Session() as session: 
+        try: 
+            active = session.scalars(select(Active_Session)).all()
+            for a in active:
+                print(a.id, a.user_id, a.created_at)  
+                
+                
+            flash_set = session.scalars(
+                select(FlashcardSet)
+                .where(FlashcardSet.title == title)
+                .where(FlashcardSet.user_id == user_id)
+                ).first()
+        except IntegrityError: 
+            raise HTTPException(status_code=400, detail="Error uploading flashcards")
+            
+        if not flash_set: 
+            flash_set = create_flashcard_set(session, title, user_id)
+            flash_set_id = flash_set.id
+            
+        else: 
+            flash_set_id = flash_set.id
+        
+        try: 
+            for i in range(len(flash_data)): 
+                id = str(uuid.uuid4())
+                new_flashcard = Flashcard(
+                    id = id,
+                    front = flash_data[i]["question"],
+                    back = flash_data[i]["answer"],
+                    flashcard_set_id = flash_set_id
+                )
+                session.add(new_flashcard)
+                
+            session.commit()
+            
+            return {
+                "message": "Flashcards uploaded successfully",
+                "set_id": flash_set.id,
+                "num_flashcards": len(flash_data)
+            }
+        except IntegrityError: 
+            raise HTTPException(status_code=400, detail="Error uploading flashcards")   
+    
+ 
+
+@router.get("/get/flashcard/set/{set_id}")
+def get_flashcard_set(set_id: str, user_id: Annotated[str, Depends(auth.get_current_user)]):
+    with Session() as session: 
+        flashcard_set = session.scalars(
+            select(FlashcardSet)
+            .where(FlashcardSet.id == set_id, FlashcardSet.user_id == user_id)
+        ).first()
+        
+        if not flashcard_set: 
+            raise HTTPException(status_code=404, detail="Flashcard set not found")
+        
+        flashcards = session.scalars(
+            select(Flashcard)
+            .where(Flashcard.flashcard_set_id == flashcard_set.id)
+        ).all()
+        
+        result = {
+            "set_id": flashcard_set.id,
+            "title": flashcard_set.title,
+            "flashcards": [
+                {
+                    "id": flashcard.id,
+                    "front": flashcard.front,
+                    "back": flashcard.back
+                } for flashcard in flashcards
+            ]
+        }
+        
+        return result  
+    
+   
+
+        
+# #add auth and get user vvv
+# @router.patch("/flashcards/set/{set_id}")
+# def update_flashcard_setname(set_id: int, set_title: FlashcardSetUpdate, user_id: Annotated[str, Depends(auth.get_current_user)]):
+    
+#     with Session() as session: 
+#         try: 
+#             stmt = (
+#                 update(FlashcardSet)
+#                 .where(FlashcardSet.id == set_id)
+#                 .where(FlashcardSet.user_id == user_id)
+#                 .values(**set_title.model_dump(exclude_unset=True))
+#             )
+            
 #             session.execute(stmt)
 #             session.commit()
             
@@ -265,9 +405,9 @@ def update_flashcard_setname(set_id: int, set_title: FlashcardSetUpdate, user_id
 #             raise HTTPException(status_code=400, detail="Error updating flashcard set title")
     
 
-#add middleware and get user vvv
+#add auth and get user vvv
 @router.patch("/flashcards/set/{set_id}/flashcard/{flashcard_id}")
-def update_flashcard(set_id: int, flashcard_id: int, flashcard_data: FlashcardUpdate, user_id: Annotated[str, Depends(middleware.get_current_user)]):
+def update_flashcard(set_id: int, flashcard_id: int, flashcard_data: FlashcardUpdate, user_id: Annotated[str, Depends(auth.get_current_user)]):
     with Session() as session: 
         try: 
             stmt = (
@@ -284,7 +424,7 @@ def update_flashcard(set_id: int, flashcard_id: int, flashcard_data: FlashcardUp
             raise HTTPException(status_code=400, detail="Error updating flashcard data")
 
 @router.delete("/flashcards/set/{set_id}")
-def delete_flashcard_set(set_id: int, user_id: Annotated[str, Depends(middleware.get_current_user)]):
+def delete_flashcard_set(set_id: int, user_id: Annotated[str, Depends(auth.get_current_user)]):
     with Session() as session: 
         try: 
             stmt = (
@@ -326,6 +466,7 @@ def get_all_users():
     with Session() as session: 
         try: 
             users =  session.scalars(select(User)).all()
+            users = session.scalars(select(User)).all()
             if not users: 
                 print("NO USERS")
                 return
@@ -341,6 +482,26 @@ def get_all_users():
         
         
         
+
+@router.get("/admin/all-sets")
+def get_all_users():
+    with Session() as session: 
+        try: 
+            flash_sets = session.scalars(select(FlashcardSet)).all()
+            if not flash_sets: 
+                print("NO FLASHCARD SETS")
+                return
+            print("PRINTING FLASHCARD SETS---------------------------------------------\n")
+            
+            for f in flash_sets:
+                print(f.to_string(f.id, f.title, f.user_id))
+           
+            print("------------------------------------------------------------")
+           
+        except IntegrityError: 
+            raise HTTPException(status_code=400, detail="Error getting active sessions")       
+        
+ 
 ###########################################    HELPER METHODS    ###############################################
         
 def create_flashcard_set(session, set_title, user_id): 
@@ -360,4 +521,3 @@ def create_flashcard_set(session, set_title, user_id):
         except IntegrityError: 
            session.rollback()
            raise HTTPException(status_code=400, detail="Error creating new flashcard set") 
-        

@@ -18,6 +18,7 @@ export default function Navbar() {
             <li className='active'>
                 <a href="/Upload">Upload</a>
             </li>
+            
         </ul>
     </nav>
 }

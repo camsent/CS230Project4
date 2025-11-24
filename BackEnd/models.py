@@ -38,8 +38,8 @@ class FlashcardSet(Base):
     )
 
     @staticmethod
-    def to_string(title):
-        return f"TITLE: {title}"
+    def to_string(id, title, user_id):
+        return f"ID: {id}, TITLE: {title}, USER_ID: {user_id}"
 
 
 class Flashcard(Base):

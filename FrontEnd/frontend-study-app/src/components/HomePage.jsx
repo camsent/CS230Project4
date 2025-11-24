@@ -1,73 +1,119 @@
-import React from 'react';
-import './HomePage.css'
-import { FaPen, FaTrash } from "react-icons/fa"
+import React, { useEffect, useState } from 'react';
+import './HomePage.css';
+import { FaPen, FaTrash } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 
-
-const myData = [
-  { id: 1, content: "Item 1" },
-  { id: 2, content: "Item 2" },
-  { id: 3, content: "Item 3" },
-  { id: 4, content: "Item 4" },
-  { id: 5, content: "Item 5" },
-
-];
-
+const API_URL = '/api'; // adjust if needed
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const [flashcardSets, setFlashcardSets] = useState([]);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchFlashcardSets = async () => {
+      try {
+        const token = localStorage.getItem('access_token'); // get JWT token
+        if (!token) throw new Error("No access token found");
+
+        const response = await fetch(`${API_URL}/home`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error fetching flashcard sets: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("Flashcard sets received:", data);
+        setFlashcardSets(data); // assuming backend returns {id: title} object
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchFlashcardSets();
+  }, []);
 
   const handleClick = (id) => {
-    navigate(`/study/${id}`); // navigate to another page (dynamic route)
+    navigate(`/study/${id}`);
   };
 
-  const handleDelete = (e, item) => {
+  const handleDelete = async (e, id) => {
     e.stopPropagation();
-    const confirmed = window.confirm(`Are you sure you want to delete "${item.content}"?`);
-    if (confirmed) {
-      console.log(`Deleted item with id: ${item.id}`);
-      // Your delete logic here (e.g., API call or state update)
+    const confirmed = window.confirm("Are you sure you want to delete this set?");
+    if (!confirmed) return;
+
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_URL}/flashcard/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to delete flashcard set");
+      
+      setFlashcardSets(prev => prev.filter(fs => fs.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
     }
   };
 
+  const handleLogout = () => {
+      localStorage.removeItem("access_token");
+      navigate("/"); 
+  }
+
   return (
     <div className="container">
-      <h1>Flash Card Sets:</h1>
+      <div className='banner'>
+        <h1>Flash Card Sets:</h1>
+        <button className="logout-button" onClick={handleLogout}>Logout</button>
+      </div>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       <div id="card_list">
-        {myData.map((item) => (
-          <div
-            key={item.id}
-            className="stuff"
-            onClick={() => handleClick(item.id)}
-            style={{ cursor: "pointer" }}
-            id="card"
-          >
-            {item.content}
-            <br />
-            <br />
-            <div id="buttons">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/edit/${item.id}`);
-                }}
-              >
-                <FaPen className='icon' />
-              </button>
-              <button
-                onClick={(e) => handleDelete(e, item)}
-              >
-                <FaTrash className='icon2' />
-              </button>
+        {Array.isArray(flashcardSets) && flashcardSets.length > 0 ? (
+          flashcardSets.map((fs) => (
+            <div
+              key={fs.id}
+              className="stuff"
+              onClick={() => handleClick(fs.id)}
+              style={{ cursor: "pointer" }}
+              id="card"
+            >
+              {fs.title}
+              <br /><br />
+              <div id="buttons">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/edit/${fs.id}`);
+                  }}
+                >
+                  <FaPen className='icon1' />
+                </button>
+                <button
+                  onClick={(e) => handleDelete(e, fs.id)}
+                >
+                  <FaTrash className='icon2' />
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p>{flashcardSets.message || "No flashcard sets found."}</p>
+        )}
       </div>
     </div>
-
-    
   );
 };
-
 
 export default HomePage;

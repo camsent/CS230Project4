@@ -10,16 +10,9 @@ pytesseract
 huggingface-hub
 transformers
 torch
-<<<<<<< HEAD
 requests
 python-dotenv
-
-
-
-
-
-
-
-=======
 requests
->>>>>>> Development
+requests
+python-dotenv
+PyJWT
