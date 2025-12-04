@@ -17,7 +17,7 @@ const StudyPage = () => {
   const fetchFlashcards = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_URL}/get/flashcard/set/${setId}`, {
+      const response = await fetch(`${API_URL}/flashcard/set/${setId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -60,7 +60,11 @@ const StudyPage = () => {
 
   const currentCard = cards[index];
 
-  return (
+  const handleClick = (id) => {
+    navigate("/matching/");
+  };
+
+   return (
     <div className="container">
       <div id="studying">
         <div id="flashcard" onClick={handleFlip}>
@@ -74,6 +78,13 @@ const StudyPage = () => {
 
       <div style={{ marginTop: '1rem' }}>
         <p style={{ color: "ghostwhite" }}>Card {index + 1} of {cards.length}</p>
+      </div>
+      <div>
+        <button onClick={() => navigate(`/matching/${setId}`)}>
+          Matching
+        </button>
+
+        <button>Test</button>
       </div>
     </div>
   );

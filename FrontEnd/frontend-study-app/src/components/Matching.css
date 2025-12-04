@@ -1,0 +1,233 @@
+/* ===== Root Theme Colors ===== */
+:root {
+  --bg: #0f172a;        /* dark blue-gray */
+  --card: rgba(255, 255, 255, 0.08);
+  --card-border: rgba(255, 255, 255, 0.15);
+  --btn: #64748b;       /* slate-500 */
+  --btn-hover: #475569; /* slate-600 */
+  --match-green: #00c853;
+}
+
+/* ===== Page Background ===== */
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+  overflow-y: auto;
+}
+
+/* Add a subtle animated gradient overlay */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.08), transparent 70%);
+  animation: pulse 5s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  from { opacity: 0.2; }
+  to   { opacity: 0.5; }
+}
+
+/* ===== Center Game Container ===== */
+.match-container {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  margin-top: 20px;     /* <--- so win message doesn’t overlap */
+  margin-bottom: 20px;
+
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+
+  transition: transform 0.4s ease;
+}
+
+.match-container:hover {
+  transform: scale(1.02);
+}
+
+/* ===== Columns ===== */
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ===== Game Buttons ===== */
+.match-btn {
+  background: var(--btn);
+  color: white;
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  padding: 10px 10px 10px 20px;
+
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
+
+  white-space: normal;        /* allow wrapping */
+  overflow-wrap: break-word;  /* break long words if needed */
+  word-wrap: break-word;      /* fallback for older browsers */
+  text-align: center;         /* center the text nicely */
+    
+}
+
+.match-btn:hover {
+  background: var(--btn-hover);
+  transform: translateY(-3px) scale(1.07);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+}
+
+/* ===== When matched ===== */
+.matched {
+  background: var(--match-green) !important;
+  border: 1px solid #00ff95;
+  color: white;
+
+  box-shadow: 0 0 15px rgba(0,255,149,0.8);
+}
+
+/* ===== Win Text ===== */
+.win {
+  color: var(--match-green);
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  animation: pop 0.7s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ================================
+   WIN BANNER — FADE + SLIDE IN
+================================= */
+.win-banner {
+  font-size: 48px;
+  font-weight: 800;
+  color: #00ff9d;
+  text-align: center;
+  margin-bottom: 20px;
+
+  opacity: 1;
+  transform: translateY(-20px);
+  animation: bannerSlideFade 1.2s ease forwards;
+
+  text-shadow: 0 0 12px rgba(0,255,180,0.6),
+               0 0 22px rgba(0,255,140,0.5);
+}
+
+@keyframes bannerSlideFade {
+  0% {
+    opacity: 0;
+    transform: translateY(-25px) scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0px) scale(1.05);
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+}
+
+/* ================================
+   CONFETTI — FLOATING, SUBTLE
+================================= */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Don’t block clicks */
+  overflow: hidden;
+}
+
+/* Each confetti piece */
+.confetti-piece {
+  position: absolute;
+  width: 8px;
+  height: 14px;
+  opacity: 0.85;
+  border-radius: 2px;
+
+  animation: confettiFloat 4s linear infinite;
+}
+
+/* Randomize position + colors */
+.confetti-piece:nth-child(odd) { background: #ff6b6b; }
+.confetti-piece:nth-child(even) { background: #4dabf7; }
+.confetti-piece:nth-child(3n) { background: #ffd93d; }
+.confetti-piece:nth-child(5n) { background: #00ff95; }
+
+/* Random placements */
+.confetti-piece {
+  left: calc(1% * var(--x));
+  animation-delay: calc(-1s * var(--d));
+}
+
+/* Floating animation */
+@keyframes confettiFloat {
+  0% {
+    transform: translateY(110vh) rotate(0deg);
+    opacity: 0;
+  }
+  20% { opacity: 1; }
+  100% {
+    transform: translateY(-20vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Timer Display */
+.timer-display {
+  font-size: 26px;
+  color: #00ffb2;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-shadow: 0 0 8px rgba(0,255,170,0.6);
+}
+
+/* Play Again Button */
+.play-again-btn {
+  background: #00ff9d;
+  color: #003b27;
+  font-weight: 700;
+  padding: 12px 22px;
+  border-radius: 12px;
+  border: none;
+  font-size: 20px;
+  margin-top: 15px;
+
+  cursor: pointer;
+  transition: 0.25s ease;
+  box-shadow: 0 0 10px rgba(0,255,150,0.5);
+}
+
+.play-again-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 20px rgba(0,255,150,0.8);
+}

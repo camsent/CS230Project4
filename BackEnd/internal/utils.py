@@ -139,7 +139,7 @@ def extract_image_text(contents):
     return text 
 
 
-hf_token = os.getenv("HF_TOKEN")
+hf_token = os.getenv("SECRET_KEY")
 API_URL = os.getenv("API_URL")
 headers = {
     "Authorization": f"Bearer {hf_token}",
@@ -147,11 +147,11 @@ headers = {
 }
 
 #client = InferenceClient()
-def create_flashcards(text: str):
+def create_flashcards(text: str, num):
     prompt = f"""
         You are an AI that creates study flashcards.
 
-        From the text below, generate 3 flashcards in strict JSON format.
+        From the text below, generate {num} flashcards in strict JSON format.
         Each flashcard must have:
         - "question": the question text
         - "answer": the answer text
@@ -186,7 +186,6 @@ def create_flashcards(text: str):
 
     data = response.json()
 
-
     return data["choices"][0]["message"]["content"]
 
 
@@ -218,15 +217,43 @@ def summarize_text(text):
     )
 
     data = response.json()
-
+    print(data["choices"][0]["message"]["content"])
+    
     return data["choices"][0]["message"]["content"]
+
+
+################################
+#           MATCHING           #
+################################
+
+
+def flashcards_to_matching(cards): 
+    text = []
+    print("----------------------- DEGUB 2 -----------------------")
+    print(cards)
+    print("-----------------------  -----------------------")
+    for card in cards: 
+        #c = {card["front"]: card["back"]}
+        
+        text.append(f"Term: {card["front"]} \nDefinition: {card["back"]}")
+        
+    return "\n\n".join(text)
 
 def create_matching(text): 
     prompt = f"""
-        You are an AI that summarizes text for educational purposes.
+        You are an AI that creates educational matching game pairs.
 
-        Read the text below and summarize it in a clear, cohesive paragraph. 
-        Include key definitions, main points, and arguments, but write it as one flowing summary that a student could read to understand the material.
+        Read the text below and extract 4 key concepts. For each concept, create a pair consisting of:
+        - "term": a concise phrase representing the concept
+        - "definition": a short description, fact, or explanation that matches the term
+
+        Return ONLY valid JSON in the following format:
+
+        [
+            {{"term": "Term 1", "definition": "Matching definition 1"}},
+            {{"term": "Term 2", "definition": "Matching definition 2"}},
+            ...
+        ]
 
         Text:
         {text}

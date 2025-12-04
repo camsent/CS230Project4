@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import './UploadPage.css';
 import { FaPlus } from 'react-icons/fa';
 
-const API_URL = '/api'; // instead of http://127.0.0.1:8000
+const API_URL = '/api'; // your backend endpoint
 
 const UploadPage = () => {
   const [title, setTitle] = useState('');
   const [file, setFile] = useState(null);
+  const [numCards, setNumCards] = useState(10); // Default to 10 cards
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -15,7 +16,7 @@ const UploadPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem('access_token')
+    const token = localStorage.getItem('access_token');
 
     if (!title || !file) {
       alert('Please enter a title and choose a file.');
@@ -25,14 +26,15 @@ const UploadPage = () => {
     const formData = new FormData();
     formData.append('title', title);
     formData.append('file', file);
+    formData.append('num_cards', numCards);
 
     try {
       const response = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         body: formData,
         headers: {
-            'Authorization': `Bearer ${token}`,
-          },
+          'Authorization': `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
@@ -42,6 +44,7 @@ const UploadPage = () => {
       alert('File uploaded successfully!');
       setTitle('');
       setFile(null);
+      setNumCards(10);
       e.target.reset();
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -78,6 +81,23 @@ const UploadPage = () => {
         />
         <br />
 
+        <label>
+          <strong>Number of Cards:</strong>
+        </label>
+        <br />
+        <select
+          value={numCards}
+          onChange={(e) => setNumCards(Number(e.target.value))}
+          style={{ width: '80%', padding: '8px', margin: '10px 0' }}
+        >
+          {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+            <option key={num} value={num}>
+              {num}
+            </option>
+          ))}
+        </select>
+        <br />
+
         <div id="buttons">
           <button type="submit">
             <FaPlus className="icon" />
@@ -89,3 +109,5 @@ const UploadPage = () => {
 };
 
 export default UploadPage;
+
+

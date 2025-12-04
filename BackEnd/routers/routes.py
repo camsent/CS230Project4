@@ -15,6 +15,8 @@ import json
 
 router = APIRouter()
 
+# TODO MATCHING AND SUMMARIZATION ROUTE 
+
 
 @router.get("/home")
 def get_flashcard_sets(user_id: Annotated[str, Depends(auth.get_current_user)]):
@@ -102,25 +104,18 @@ def logout(user_id: Annotated[str, Depends(middleware.get_current_user)]):
 
 
 @router.post("/upload")
-async def create_upload_file(file: UploadFile, title: Annotated[str, Form()], user_id: Annotated[str, Depends(auth.get_current_user)]): # create_upload_files(files: list[UploadFile]) -> FOR MULTIPLE FILES IF NEEDED
+async def create_upload_file(file: UploadFile, title: Annotated[str, Form()], num_cards: Annotated[int, Form()], user_id: Annotated[str, Depends(auth.get_current_user)]): 
     contents = await file.read()
 
     img_text = utils.extract_image_text(contents)
-    flash_data = utils.create_flashcards(img_text)
+    flash_data = utils.create_flashcards(img_text, num_cards)
     flash_data = flash_data.strip()
     flash_data = json.loads(flash_data)
     
-    # for i in range(len(flash_data)): 
-    #     print(flash_data[i])
     
     # Checking if set exists
     with Session() as session: 
         try: 
-            active = session.scalars(select(Active_Session)).all()
-            for a in active:
-                print(a.id, a.user_id, a.created_at)  
-                
-                
             flash_set = session.scalars(
                 select(FlashcardSet)
                 .where(FlashcardSet.title == title)
@@ -157,9 +152,21 @@ async def create_upload_file(file: UploadFile, title: Annotated[str, Form()], us
         except IntegrityError: 
             raise HTTPException(status_code=400, detail="Error uploading flashcards")   
     
- 
+@router.post("/summarize")
+async def create_upload_file(file: UploadFile, user_id: Annotated[str, Depends(auth.get_current_user)]): 
+    _ = user_id
+    contents = await file.read()
 
-@router.get("/get/flashcard/set/{set_id}")
+    img_text = utils.extract_image_text(contents)
+    summ_text = utils.summarize_text(img_text)
+    summ_text = summ_text.strip()
+    #summ_text = json.loads(summ_text)
+    
+    return {"text": summ_text}
+        
+
+
+@router.get("/flashcard/set/{set_id}")
 def get_flashcard_set(set_id: str, user_id: Annotated[str, Depends(auth.get_current_user)]):
     with Session() as session: 
         flashcard_set = session.scalars(
@@ -188,6 +195,55 @@ def get_flashcard_set(set_id: str, user_id: Annotated[str, Depends(auth.get_curr
         }
         
         return result  
+    
+    
+@router.get("/matching/{set_id}")
+def create_matching(set_id: str, user_id: Annotated[str, Depends(auth.get_current_user)]): 
+    #print(set_id)
+    with Session() as session: 
+        
+        flashcard_set = session.scalars(
+            select(FlashcardSet)
+            .where(FlashcardSet.id == set_id, FlashcardSet.user_id == user_id)
+        ).first()
+        
+        if not flashcard_set: 
+            raise HTTPException(status_code=404, detail="Flashcard set not found")
+        
+        cards = session.scalars(
+            select(Flashcard)
+            .where(Flashcard.flashcard_set_id == flashcard_set.id)
+        ).all()
+        
+        print("----------------------- DEGUB -----------------------")
+        print(f"SET_ID = {flashcard_set.id}")
+        print(cards)
+        print("---------------------------------------------")
+
+        result = []
+        for card in cards: 
+            c = {"front": card.front, "back": card.back}
+            result.append(c)
+        
+        print(result)      # [{'front': 'Q1', 'back': 'A1'}, ...]
+        
+        
+        #text = utils.flashcards_to_matching(result)
+        return result
+        
+        
+    # data = get_flashcard_set(set_id, user_id)
+    # cards = data["flashcards"]
+    # text = utils.flashcards_to_matching(cards)
+    # print(type(text))
+    # return text
+    
+    
+    
+    
+    
+    
+    
     
    
 
