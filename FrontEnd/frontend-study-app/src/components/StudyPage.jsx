@@ -80,11 +80,10 @@ const StudyPage = () => {
         <p style={{ color: "ghostwhite" }}>Card {index + 1} of {cards.length}</p>
       </div>
       <div>
-        <button onClick={() => navigate(`/matching/${setId}`)}>
+        <button onClick={() => navigate(`/matching/${setId}`)} style={{marginTop: "15px"}}>
           Matching
         </button>
 
-        <button>Test</button>
       </div>
     </div>
   );
