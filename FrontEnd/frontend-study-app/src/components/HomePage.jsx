@@ -45,12 +45,12 @@ const HomePage = () => {
 
   const handleDelete = async (e, id) => {
     e.stopPropagation();
-    const confirmed = window.confirm("Are you sure you want to delete this set?");
-    if (!confirmed) return;
+    // const confirmed = window.confirm("Are you sure you want to delete this set?");
+    // if (!confirmed) return;
 
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${API_URL}/flashcard/${id}`, {
+      const response = await fetch(`${API_URL}/flashcard-set/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -6,6 +6,7 @@ import HomePage from './components/HomePage';
 import StudyPage from './components/StudyPage';
 import UploadPage from './components/UploadPage';
 import Matching from './components/Matching';
+import Summarize from './components/Summarize';
 import Navbar from './components/NavBar';
 
 function AppContent() {
@@ -21,8 +22,9 @@ function AppContent() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/home" element={<HomePage />} />
-       <Route path="/study/:setId" element={<StudyPage />} />
+        <Route path="/study/:setId" element={<StudyPage />} />
         <Route path="/matching/:setId" element={<Matching />} />
+        <Route path="/summarize" element={<Summarize />} />
         <Route path="/upload" element={<UploadPage />} />
       </Routes>
     </>

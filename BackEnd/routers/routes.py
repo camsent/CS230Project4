@@ -232,44 +232,7 @@ def create_matching(set_id: str, user_id: Annotated[str, Depends(auth.get_curren
         return result
         
         
-    # data = get_flashcard_set(set_id, user_id)
-    # cards = data["flashcards"]
-    # text = utils.flashcards_to_matching(cards)
-    # print(type(text))
-    # return text
-    
-    
-    
-    
-    
-    
-    
-    
-   
 
-        
-# #add auth and get user vvv
-# @router.patch("/flashcards/set/{set_id}")
-# def update_flashcard_setname(set_id: int, set_title: FlashcardSetUpdate, user_id: Annotated[str, Depends(auth.get_current_user)]):
-    
-#     with Session() as session: 
-#         try: 
-#             stmt = (
-#                 update(FlashcardSet)
-#                 .where(FlashcardSet.id == set_id)
-#                 .where(FlashcardSet.user_id == user_id)
-#                 .values(**set_title.model_dump(exclude_unset=True))
-#             )
-            
-#             session.execute(stmt)
-#             session.commit()
-            
-#         except IntegrityError: 
-#             session.rollback()
-#             raise HTTPException(status_code=400, detail="Error updating flashcard set title")
-    
-
-#add auth and get user vvv
 @router.patch("/flashcards/set/{set_id}/flashcard/{flashcard_id}")
 def update_flashcard(set_id: int, flashcard_id: int, flashcard_data: FlashcardUpdate, user_id: Annotated[str, Depends(auth.get_current_user)]):
     with Session() as session: 
@@ -287,8 +250,8 @@ def update_flashcard(set_id: int, flashcard_id: int, flashcard_data: FlashcardUp
             session.rollback()
             raise HTTPException(status_code=400, detail="Error updating flashcard data")
 
-@router.delete("/flashcards/set/{set_id}")
-def delete_flashcard_set(set_id: int, user_id: Annotated[str, Depends(auth.get_current_user)]):
+@router.delete("/flashcard-set/{set_id}")
+def delete_flashcard_set(set_id: str, user_id: Annotated[str, Depends(auth.get_current_user)]):
     with Session() as session: 
         try: 
             stmt = (
