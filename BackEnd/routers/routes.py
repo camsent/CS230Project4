@@ -223,10 +223,6 @@ def create_matching(set_id: str, user_id: Annotated[str, Depends(auth.get_curren
             c = {"front": card.front, "back": card.back}
             result.append(c)
         
-        print(result)      # [{'front': 'Q1', 'back': 'A1'}, ...]
-        
-        
-        #text = utils.flashcards_to_matching(result)
         return result
         
         
