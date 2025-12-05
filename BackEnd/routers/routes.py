@@ -15,8 +15,6 @@ import json
 
 router = APIRouter()
 
-# TODO MATCHING AND SUMMARIZATION ROUTE 
-
 
 @router.get("/home")
 def get_flashcard_sets(user_id: Annotated[str, Depends(auth.get_current_user)]):
